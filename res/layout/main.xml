@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:background="@color/white">
+
+	<LinearLayout
+		android:orientation="vertical"
+		android:id="@+id/waveformContainer"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:background="@color/white"
+		android:layout_weight="2">
+	</LinearLayout>
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:orientation="horizontal"
+		android:layout_weight="8"
+		android:background="@color/black"
+		android:layout_height="match_parent">
+
+
+		<Button
+			android:layout_width="match_parent"
+			android:layout_weight="3"
+			android:id="@+id/myButton1"
+			android:text="EEG signals"
+			android:textColor="@color/white"
+			android:textSize="20sp"
+			android:layout_height="match_parent"></Button>
+		<Button
+			android:layout_width="match_parent"
+			android:layout_weight="3"
+			android:textSize="20sp"
+			android:id="@+id/myButton2"
+			android:textColor="@color/deep_yellow"
+			android:text="DBS signals"
+			android:layout_height="match_parent"></Button>
+		<Button
+			android:layout_width="match_parent"
+			android:layout_weight="3"
+			android:textSize="20sp"
+			android:id="@+id/buttonPause"
+			android:text="Pause"
+			android:layout_height="match_parent"></Button>
+		<ZoomControls
+			android:id="@+id/zoomControls1"
+			android:gravity="center_horizontal|center_vertical"
+			android:layout_weight="3"
+			android:layout_height="match_parent"
+			android:layout_width="match_parent"></ZoomControls>
+		<TextView
+			android:gravity="center_horizontal|center_vertical"
+			android:text="@string/DBS"
+			android:textSize="25pt"
+			android:id="@+id/myTextView"
+			android:textColor="@color/white"
+			android:layout_height="match_parent"
+			android:layout_width="match_parent"
+			android:layout_weight="2"></TextView>
+	</LinearLayout>
+
+
+
+</LinearLayout>
+
+
+

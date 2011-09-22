@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="hello">Hello World, WaveformActivity!</string>
+	<string name="app_name">Waveform</string>
+	<string name="EEG">4-Channel EEG signals</string>
+	<string name="DBS">4-Channel DBS signals</string>
+
+</resources>
