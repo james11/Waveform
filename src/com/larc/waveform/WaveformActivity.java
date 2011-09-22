@@ -21,7 +21,7 @@ public class WaveformActivity extends Activity {
 	
 	private LinearLayout mWaveformContainer;
 	
-	private Handler mHandler;
+	private Handler mmmHandler;
 	private Button mButtonPause;
 	private Button mButtonEEG;
 	private Button mButtonDBS;
@@ -77,8 +77,8 @@ public class WaveformActivity extends Activity {
 				showDBS();
 			}
 		});
-		mHandler = new Handler();
-		mHandler.post(mPushDataRunnable);
+		mmmHandler = new Handler();
+		mmmHandler.post(mPushDataRunnable);
 	}
 	
 	private void showDBS(){
@@ -117,7 +117,7 @@ public class WaveformActivity extends Activity {
 			for(WaveformView wave : mWaveformArray){
 				wave.setCurrentData(0, data);
 			}
-			mHandler.postDelayed(this, 10);
+			mmmHandler.postDelayed(this, 10);
 		}
 
 	};
