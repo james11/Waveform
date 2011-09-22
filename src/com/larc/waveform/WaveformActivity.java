@@ -1,7 +1,6 @@
 package com.larc.waveform;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,7 +9,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
-import com.larc.waveform.R.color;
 import com.larc.waveform.data.ReceivedData;
 
 public class WaveformActivity extends Activity {
