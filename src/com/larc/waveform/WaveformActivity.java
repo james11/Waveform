@@ -20,7 +20,11 @@ public class WaveformActivity extends Activity {
 	private WaveformView[] mWaveformArray;
 
 	private LinearLayout mWaveformContainer;
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> parent of 1ef337e... Revert 97bf37c5f70f6b1bd02e5b71737f7c8e76d40492^..HEAD
 	private Handler mHandler;
 	private Button mButtonPause;
 	private Button mButtonEEG;
@@ -97,7 +101,10 @@ public class WaveformActivity extends Activity {
 				}
 			}
 		});
+<<<<<<< HEAD
 
+=======
+>>>>>>> parent of 1ef337e... Revert 97bf37c5f70f6b1bd02e5b71737f7c8e76d40492^..HEAD
 		mHandler = new Handler();
 		mHandler.post(mPushDataRunnable);
 	}
