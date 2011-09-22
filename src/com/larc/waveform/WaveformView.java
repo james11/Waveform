@@ -14,7 +14,7 @@ import android.widget.ImageView;
 
 public class WaveformView extends ImageView {
 
-	private static final int DEFAULT_X_SIZE = 100;
+	private static final int DEFAULT_X_SIZE = 50;
 	private static final int DEFAULT_PAINT_COLOR = 0xFFFF0000;
 	private static final int DEFAULT_LINE_WIDTH = 2;
 
