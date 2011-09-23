@@ -7,14 +7,36 @@
 	android:background="@color/white">
 
 	<LinearLayout
-		android:orientation="vertical"
-		android:id="@+id/waveformContainer"
+		android:gravity="center_horizontal|center_vertical"
+		android:orientation="horizontal"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:background="@color/white"
 		android:layout_weight="2">
+
+
+		<LinearLayout
+			android:gravity="center_horizontal|center_vertical"
+			android:id="@+id/waveformBlock"
+			android:textSize="25pt"
+			android:layout_height="match_parent"
+			android:layout_width="match_parent"
+			android:layout_weight="10">
+		</LinearLayout>
+
+		<LinearLayout
+			android:id="@+id/waveformContainer"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:background="@color/white"
+			android:layout_weight="2">
+
+		</LinearLayout>
+
 	</LinearLayout>
-	
+
+
+
 	<LinearLayout
 		android:layout_width="match_parent"
 		android:orientation="horizontal"
@@ -24,22 +46,23 @@
 
 
 		<Button
+			android:gravity="center_horizontal|center_vertical"
 			android:layout_width="match_parent"
 			android:layout_weight="3"
 			android:id="@+id/buttonEEG"
 			android:text="EEG signals"
-			android:textColor="@color/white"
 			android:textSize="20sp"
 			android:layout_height="match_parent"></Button>
 		<Button
+			android:gravity="center_horizontal|center_vertical"
 			android:layout_width="match_parent"
 			android:layout_weight="3"
 			android:textSize="20sp"
 			android:id="@+id/buttonDBS"
-			android:textColor="@color/deep_yellow"
 			android:text="DBS signals"
 			android:layout_height="match_parent"></Button>
 		<Button
+			android:gravity="center_horizontal|center_vertical"
 			android:layout_width="match_parent"
 			android:layout_weight="3"
 			android:textSize="20sp"
@@ -54,7 +77,6 @@
 			android:layout_width="match_parent"></ZoomControls>
 		<TextView
 			android:gravity="center_horizontal|center_vertical"
-			android:text="@string/DBS"
 			android:textSize="25pt"
 			android:id="@+id/myTextView"
 			android:layout_height="match_parent"
