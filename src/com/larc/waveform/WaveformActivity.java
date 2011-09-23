@@ -30,7 +30,6 @@ public class WaveformActivity extends Activity {
 	private ReceivedData[] mEegData = new ReceivedData[WAVEFORM_COUNT];
 
 	private int mEegShown = 0;
-	private int mPause = 0;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -70,12 +69,15 @@ public class WaveformActivity extends Activity {
 		mButtonPause.setOnClickListener(new Button.OnClickListener() {
 
 			public void onClick(View view) {
-				if(mPause == 0){
-					pauseandstart();
-					mPause = 1;
-				}else{
-					pauseandstart();
-					mPause = 0;
+				for (WaveformView wave : mWaveformArray) {
+					int on = 1;
+					if (on == 1) {
+						wave.stop();
+						on = 0;
+					} else {
+						wave.start();
+						on = 1;
+					}
 				}
 			}
 		});
@@ -101,36 +103,16 @@ public class WaveformActivity extends Activity {
 		mHandler = new Handler();
 		mHandler.post(mPushDataRunnable);
 	}
-	
-	
-	public void pauseandstart(){
-		for (WaveformView wave : mWaveformArray) {
-//			int pause = 0;
-			if (mPause == 0) {
-				wave.stop();
-//				on = 0;
-			}
-			if (mPause == 1) {
-				wave.start();
-				if (mEegShown == 0) {
-					showEEG();
-				} else {
-					showDBS();
-				}
-//				on = 1;
-			}
-		}
-	}
 
 	public void showDBS() {
 		mEegShown = 0;
 		for (WaveformView wave : mWaveformArray) {
 			wave.removeAllDataSet();
 			wave.createNewDataSet(DEFAULT_SIZE);
-//			for (int i = 0; i < WAVEFORM_COUNT; i++) {
-				int[] dataArray = mDbsData[0].getData(DEFAULT_SIZE);
+			for (int i = 0; i < WAVEFORM_COUNT; i++) {
+				int[] dataArray = mDbsData[i].getData(DEFAULT_SIZE);
 				wave.setData(0, dataArray);
-//			}
+			}
 		}
 		mWaveformArray[1].setLineColor(0, Color.GREEN);
 
@@ -144,10 +126,10 @@ public class WaveformActivity extends Activity {
 		for (WaveformView wave : mWaveformArray) {
 			wave.removeAllDataSet();
 			wave.createNewDataSet(DEFAULT_SIZE);
-//			for (int i = 0; i < WAVEFORM_COUNT; i++) {
-				int[] dataArray = mEegData[0].getData(DEFAULT_SIZE);
+			for (int i = 0; i < WAVEFORM_COUNT; i++) {
+				int[] dataArray = mEegData[i].getData(DEFAULT_SIZE);
 				wave.setData(0, dataArray);
-//			}
+			}
 		}
 		mWaveformArray[1].setLineColor(0, Color.GREEN);
 
