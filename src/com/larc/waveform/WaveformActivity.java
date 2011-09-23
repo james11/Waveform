@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
+import android.widget.TextView;
 
 import com.larc.waveform.data.ReceivedData;
 
@@ -25,6 +26,7 @@ public class WaveformActivity extends Activity {
 	private Button mButtonPause;
 	private Button mButtonEEG;
 	private Button mButtonDBS;
+	private TextView mTextView;
 
 	private ReceivedData[] mDbsData = new ReceivedData[WAVEFORM_COUNT];
 	private ReceivedData[] mEegData = new ReceivedData[WAVEFORM_COUNT];
@@ -44,6 +46,7 @@ public class WaveformActivity extends Activity {
 		mButtonPause = (Button) findViewById(R.id.buttonPause);
 		mButtonEEG = (Button) findViewById(R.id.buttonEEG);
 		mButtonDBS = (Button) findViewById(R.id.buttonDBS);
+		mTextView = (TextView) findViewById(R.id.myTextView);
 
 		mWaveformArray = new WaveformView[WAVEFORM_COUNT];
 		mWaveformContainer = (LinearLayout) findViewById(R.id.waveformContainer);
@@ -64,18 +67,22 @@ public class WaveformActivity extends Activity {
 
 			mWaveformArray[3].setLineColor(0, R.color.weak_yellow);
 
+			mTextView.setText("4-Channel DBS Signals");
 			wave.start();
 		}
 
 		mButtonPause.setOnClickListener(new Button.OnClickListener() {
 
 			public void onClick(View view) {
-				if(mPause == 0){
+				if (mPause == 0) {
 					pauseandstart();
 					mPause = 1;
-				}else{
+					mButtonPause.setTextColor(0xffff9900);
+
+				} else {
 					pauseandstart();
 					mPause = 0;
+					mButtonPause.setTextColor(Color.WHITE);
 				}
 			}
 		});
@@ -85,6 +92,9 @@ public class WaveformActivity extends Activity {
 			public void onClick(View view) {
 				if (mEegShown == 0) {
 					showEEG();
+					mButtonEEG.setTextColor(0xffff9900);
+					mButtonDBS.setTextColor(Color.WHITE);
+					mTextView.setText("4-Channel EEG Signals");
 				}
 			}
 		});
@@ -94,6 +104,9 @@ public class WaveformActivity extends Activity {
 			public void onClick(View v) {
 				if (mEegShown == 1) {
 					showDBS();
+					mButtonDBS.setTextColor(0xffff9900);
+					mButtonEEG.setTextColor(Color.WHITE);
+					mTextView.setText("4-Channel DBS Signals");
 				}
 			}
 		});
@@ -101,14 +114,13 @@ public class WaveformActivity extends Activity {
 		mHandler = new Handler();
 		mHandler.post(mPushDataRunnable);
 	}
-	
-	
-	public void pauseandstart(){
+
+	public void pauseandstart() {
 		for (WaveformView wave : mWaveformArray) {
-//			int pause = 0;
+			// int pause = 0;
 			if (mPause == 0) {
 				wave.stop();
-//				on = 0;
+				// on = 0;
 			}
 			if (mPause == 1) {
 				wave.start();
@@ -117,7 +129,7 @@ public class WaveformActivity extends Activity {
 				} else {
 					showDBS();
 				}
-//				on = 1;
+				// on = 1;
 			}
 		}
 	}
@@ -127,10 +139,10 @@ public class WaveformActivity extends Activity {
 		for (WaveformView wave : mWaveformArray) {
 			wave.removeAllDataSet();
 			wave.createNewDataSet(DEFAULT_SIZE);
-//			for (int i = 0; i < WAVEFORM_COUNT; i++) {
-				int[] dataArray = mDbsData[0].getData(DEFAULT_SIZE);
-				wave.setData(0, dataArray);
-//			}
+			// for (int i = 0; i < WAVEFORM_COUNT; i++) {
+			int[] dataArray = mDbsData[0].getData(DEFAULT_SIZE + 50);
+			wave.setData(0, dataArray);
+			// }
 		}
 		mWaveformArray[1].setLineColor(0, Color.GREEN);
 
@@ -144,10 +156,10 @@ public class WaveformActivity extends Activity {
 		for (WaveformView wave : mWaveformArray) {
 			wave.removeAllDataSet();
 			wave.createNewDataSet(DEFAULT_SIZE);
-//			for (int i = 0; i < WAVEFORM_COUNT; i++) {
-				int[] dataArray = mEegData[0].getData(DEFAULT_SIZE);
-				wave.setData(0, dataArray);
-//			}
+			// for (int i = 0; i < WAVEFORM_COUNT; i++) {
+			int[] dataArray = mEegData[0].getData(DEFAULT_SIZE);
+			wave.setData(0, dataArray);
+			// }
 		}
 		mWaveformArray[1].setLineColor(0, Color.GREEN);
 

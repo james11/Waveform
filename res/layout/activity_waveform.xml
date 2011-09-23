@@ -57,7 +57,6 @@
 			android:text="@string/DBS"
 			android:textSize="25pt"
 			android:id="@+id/myTextView"
-			android:textColor="@color/white"
 			android:layout_height="match_parent"
 			android:layout_width="match_parent"
 			android:layout_weight="2"></TextView>
