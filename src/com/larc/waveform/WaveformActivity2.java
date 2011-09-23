@@ -1,7 +1,5 @@
 package com.larc.waveform;
 
-import com.larc.waveform.R.color;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
@@ -9,6 +7,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
+
+import com.larc.waveform.R.color;
 
 public class WaveformActivity2 extends Activity {
 	/** Called when the activity is first created. */

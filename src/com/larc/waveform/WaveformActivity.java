@@ -179,6 +179,7 @@ public class WaveformActivity extends Activity {
 			mHandler.postDelayed(this, 10);
 		}
 
+		
 	};
 
 }
