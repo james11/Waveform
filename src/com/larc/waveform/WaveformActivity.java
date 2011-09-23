@@ -15,7 +15,13 @@ import com.larc.waveform.data.ReceivedData;
 public class WaveformActivity extends Activity {
 	private static final int DEFAULT_SIZE = 50;
 	private static final int WAVEFORM_COUNT = 4;
-
+	
+	private static final int COLOR_TEXT_NORMAL = Color.BLACK;
+	private static final int COLOR_TEXT_SELECTED = 0xFFFF9900;
+	
+	private static final int SIGNAL_EEG = 0;
+	private static final int SIGNAL_DBS = 1;
+	
 	/** Called when the activity is first created. */
 
 	private WaveformView[] mWaveformArray;
@@ -31,8 +37,8 @@ public class WaveformActivity extends Activity {
 	private ReceivedData[] mDbsData = new ReceivedData[WAVEFORM_COUNT];
 	private ReceivedData[] mEegData = new ReceivedData[WAVEFORM_COUNT];
 
-	private int mEegShown = 0;
-	private int mPause = 0;
+	private int mSignal = SIGNAL_EEG;
+	private boolean mPause = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -74,68 +80,73 @@ public class WaveformActivity extends Activity {
 		mButtonPause.setOnClickListener(new Button.OnClickListener() {
 
 			public void onClick(View view) {
-				if (mPause == 0) {
-					pauseandstart();
-					mPause = 1;
-					mButtonPause.setTextColor(0xffff9900);
-
-				} else {
-					pauseandstart();
-					mPause = 0;
-					mButtonPause.setTextColor(Color.WHITE);
-				}
+				pauseAndStart();
 			}
 		});
 
-		mButtonEEG.setOnClickListener(new Button.OnClickListener() {
+		mButtonEEG.setOnClickListener(mButtonClickListener);
 
-			public void onClick(View view) {
-				if (mEegShown == 0) {
-					showEEG();
-					mButtonEEG.setTextColor(0xffff9900);
-					mButtonDBS.setTextColor(Color.WHITE);
-					mTextView.setText("4-Channel EEG Signals");
-				}
-			}
-		});
-
-		mButtonDBS.setOnClickListener(new Button.OnClickListener() {
-
-			public void onClick(View v) {
-				if (mEegShown == 1) {
-					showDBS();
-					mButtonDBS.setTextColor(0xffff9900);
-					mButtonEEG.setTextColor(Color.WHITE);
-					mTextView.setText("4-Channel DBS Signals");
-				}
-			}
-		});
+		mButtonDBS.setOnClickListener(mButtonClickListener);
 
 		mHandler = new Handler();
 		mHandler.post(mPushDataRunnable);
+		
+		refreshSignal();
+	}
+	
+	private Button.OnClickListener mButtonClickListener = new Button.OnClickListener(){
+		@Override
+		public void onClick(View v) {
+			int id = v.getId();
+			switch(id){
+			case R.id.buttonDBS:
+				mSignal = SIGNAL_DBS;
+				break;
+			case R.id.buttonEEG:
+			default:
+				mSignal = SIGNAL_EEG;
+				break;
+			}
+			refreshSignal();
+		}
+	};
+	
+	private void refreshSignal(){
+		switch(mSignal){
+		case SIGNAL_DBS:
+			showDBS();
+			mButtonDBS.setTextColor(COLOR_TEXT_SELECTED);
+			mButtonEEG.setTextColor(COLOR_TEXT_NORMAL);
+			mTextView.setText("4-Channel DBS Signals");
+			break;
+		case SIGNAL_EEG:
+			showEEG();
+			mButtonEEG.setTextColor(COLOR_TEXT_SELECTED);
+			mButtonDBS.setTextColor(COLOR_TEXT_NORMAL);
+			mTextView.setText("4-Channel EEG Signals");
+			break;
+		}
+		
 	}
 
-	public void pauseandstart() {
-		for (WaveformView wave : mWaveformArray) {
-			// int pause = 0;
-			if (mPause == 0) {
+	public void pauseAndStart() {
+		if (!mPause) {
+			for (WaveformView wave : mWaveformArray) {
+				mButtonPause.setTextColor(COLOR_TEXT_SELECTED);
 				wave.stop();
-				// on = 0;
 			}
-			if (mPause == 1) {
+			mPause = true;
+		} else {
+			mPause = false;
+			for (WaveformView wave : mWaveformArray) {
+				mButtonPause.setTextColor(COLOR_TEXT_NORMAL);
 				wave.start();
-				if (mEegShown == 0) {
-					showEEG();
-				} else {
-					showDBS();
-				}
-				// on = 1;
 			}
 		}
 	}
 
 	public void showDBS() {
-		mEegShown = 0;
+		mSignal = 0;
 		for (WaveformView wave : mWaveformArray) {
 			wave.removeAllDataSet();
 			wave.createNewDataSet(DEFAULT_SIZE);
@@ -152,7 +163,7 @@ public class WaveformActivity extends Activity {
 	}
 
 	public void showEEG() {
-		mEegShown = 1;
+		mSignal = 1;
 		for (WaveformView wave : mWaveformArray) {
 			wave.removeAllDataSet();
 			wave.createNewDataSet(DEFAULT_SIZE);
@@ -179,7 +190,6 @@ public class WaveformActivity extends Activity {
 			mHandler.postDelayed(this, 10);
 		}
 
-		
 	};
 
 }
