@@ -71,7 +71,7 @@ public class WaveformActivity extends Activity {
 
 			mChannelNameArray[i] = new TextView(this);
 			mChannelNameArray[i].setText("CH" + (i + 1));
-			mChannelNameArray[i].setTextSize(20);
+			mChannelNameArray[i].setTextSize(40);
 			mChannelNameArray[i].setTextColor(0xffff9900);
 			mChannelNameArray[i].setGravity(android.view.Gravity.CENTER);
 
