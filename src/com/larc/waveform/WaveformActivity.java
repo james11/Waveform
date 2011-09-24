@@ -26,10 +26,10 @@ public class WaveformActivity extends Activity {
 	/** Called when the activity is first created. */
 
 	private WaveformView[] mWaveformArray;
-	private TextView[] mWaveformName;
+	private TextView[] mChannelNameArray;
 
 	private LinearLayout mWaveformContainer;
-	private LinearLayout mWaveformBlock;
+	private LinearLayout mChannelNameContainer;
 
 	private Handler mHandler;
 	private Button mButtonPause;
@@ -59,30 +59,29 @@ public class WaveformActivity extends Activity {
 		mTextView = (TextView) findViewById(R.id.myTextView);
 
 		mWaveformArray = new WaveformView[WAVEFORM_COUNT];
-		mWaveformName = new TextView[WAVEFORM_COUNT];
+		mChannelNameArray = new TextView[WAVEFORM_COUNT];
 
 		mWaveformContainer = (LinearLayout) findViewById(R.id.waveformContainer);
-		mWaveformBlock = (LinearLayout) findViewById(R.id.waveformBlock);
+		mChannelNameContainer = (LinearLayout) findViewById(R.id.waveformBlock);
 
 		LinearLayout.LayoutParams params = new LayoutParams(
 				LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, 1f);
 
 		for (int i = 0; i < WAVEFORM_COUNT; i++) {
 
-			mWaveformName[i] = new TextView(this);
-			mWaveformName[i].setText("CH"+(i+1));
-			mWaveformName[i].setTextSize(40);
-			mWaveformName[i].setTextColor(0xffff9900);
-			mWaveformName[i].setGravity(android.view.Gravity.CENTER);
+			mChannelNameArray[i] = new TextView(this);
+			mChannelNameArray[i].setText("CH" + (i + 1));
+			mChannelNameArray[i].setTextSize(40);
+			mChannelNameArray[i].setTextColor(0xffff9900);
+			mChannelNameArray[i].setGravity(android.view.Gravity.CENTER);
 
 			mWaveformArray[i] = new WaveformView(this);
-			
-			 int HorizontalScrollView = 1;
-			 mWaveformContainer.setOrientation(HorizontalScrollView);
-			 mWaveformBlock.setOrientation(HorizontalScrollView);
+
+			mWaveformContainer.setOrientation(LinearLayout.VERTICAL);
+			mChannelNameContainer.setOrientation(LinearLayout.VERTICAL);
 
 			mWaveformContainer.addView(mWaveformArray[i], params);
-			mWaveformBlock.addView(mWaveformName[i], params);
+			mChannelNameContainer.addView(mChannelNameArray[i], params);
 
 		}
 
