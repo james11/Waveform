@@ -1,15 +1,17 @@
 package com.larc.waveform;
 
 import android.app.Activity;
+//import android.bluetooth.BluetoothAdapter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
+//import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
+//import android.widget.Toast;
 
 import com.larc.waveform.data.ReceivedData;
 
@@ -44,6 +46,9 @@ public class WaveformActivity extends Activity {
 	private int mSignalCheck = SIGNAL_DBS;
 	private boolean mPause = false;
 
+//	private BluetoothAdapter mBluetoothAdapter;
+//	private ArrayAdapter<String> mPairedDevicesArrayAdapter;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -52,6 +57,35 @@ public class WaveformActivity extends Activity {
 			mDbsData[i] = new ReceivedData();
 			mEegData[i] = new ReceivedData();
 		}
+//
+//		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+//		if (mBluetoothAdapter == null) {
+//			Toast.makeText(this, "No Bluetooth Communication",
+//					Toast.LENGTH_LONG).show();
+//			finish();
+//			return;
+//		}
+
+		// if (!mBluetoothAdapter.isEnabled()){
+		// Intent enableIntent = new
+		// Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+		// startActivityForResult(enableIntent, RESULT_OK);
+		// }
+		//
+//		Set<BluetoothDevice> pairedDevices = mBluetoothAdapter
+//				.getBondedDevices();
+//		if (pairedDevices.size() > 0) {
+//			findViewById(R.id.title_paired_devices).setVisibility(View.VISIBLE);
+//			for (BluetoothDevice device : pairedDevices) {
+//				mPairedDevicesArrayAdapter.add(device.getName() + "\n"
+//						+ device.getAddress());
+//			}
+//		} else {
+//			String noDevices = getResources().getText(R.string.none_paired)
+//					.toString();
+//			mPairedDevicesArrayAdapter.add(noDevices);
+//		}
+		
 
 		mButtonPause = (Button) findViewById(R.id.buttonPause);
 		mButtonEEG = (Button) findViewById(R.id.buttonEEG);
@@ -104,7 +138,7 @@ public class WaveformActivity extends Activity {
 		mButtonPause.setOnClickListener(new Button.OnClickListener() {
 
 			public void onClick(View view) {
-				Log.v("Wave", "ButtonPauseClicked");
+				// Log.v("Wave", "ButtonPauseClicked");
 				pauseAndStart();
 			}
 		});

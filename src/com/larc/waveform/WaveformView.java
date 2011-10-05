@@ -3,7 +3,6 @@ package com.larc.waveform;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.ListIterator;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -18,7 +17,7 @@ public class WaveformView extends ImageView {
 	private static final int DEFAULT_PAINT_COLOR = 0xFFFF0000;
 	private static final int DEFAULT_LINE_WIDTH = 2;
 
-	private int mUpdatePeriod = 50;
+	private int mUpdatePeriod = 10;
 	private Handler mRefreshHandler;
 
 	private ArrayList<DataSet> mDataSets;
@@ -26,7 +25,7 @@ public class WaveformView extends ImageView {
 	Runnable mRefreshRunnable = new Runnable() {
 		public void run() {
 			for (int i = 0; i < mDataSets.size(); i++) {
-				mDataSets.get(i).push();
+				mDataSets.get(i).push();    //???
 			}
 			WaveformView.this.invalidate();
 			mRefreshHandler.postDelayed(this, mUpdatePeriod);
@@ -60,12 +59,12 @@ public class WaveformView extends ImageView {
 		mRefreshHandler = new Handler();
 	}
 
-	public WaveformView(Context context) {
+	public WaveformView(Context context) {    //???
 		super(context);
 		init();
 	}
 
-	public WaveformView(Context context, AttributeSet attrs) {
+	public WaveformView(Context context, AttributeSet attrs) {   // ???
 		super(context, attrs);
 		init();
 	}
@@ -89,7 +88,7 @@ public class WaveformView extends ImageView {
 			paint.setColor(data.paintColor);
 			paint.setStrokeWidth(data.lineWidth);
 
-			ListIterator<Integer> iter = data.listIterator();
+			ListIterator<Integer> iter = data.listIterator();    //???
 			int y1 = 0;
 			int y2 = 0;
 			if (iter.hasNext())

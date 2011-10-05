@@ -20,6 +20,7 @@
 			android:id="@+id/waveformBlock"
 			android:layout_height="match_parent"
 			android:layout_width="match_parent"
+			android:background="@color/gray"
 			android:layout_weight="10">
 		</LinearLayout>
 
@@ -79,9 +80,5 @@
 			android:layout_weight="2"></TextView>
 	</LinearLayout>
 
-
-
 </LinearLayout>
-
-
 
