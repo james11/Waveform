@@ -3,26 +3,31 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	package="com.larc.waveform"
 	android:versionCode="1"
-	android:versionName="1.0">
+	android:versionName="1.0"
+>
 	<uses-sdk android:minSdkVersion="7" />
 
-	<user-permission android:name="android.permission.BLUETOOTH" />
-	<user-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+	<uses-permission android:name="android.permission.BLUETOOTH"></uses-permission>
+	<uses-permission android:name="android.permission.BLUETOOTH_ADMIN"></uses-permission>
 
 	<application
 		android:icon="@drawable/icon1"
-		android:label="@string/app_name">
+		android:label="@string/app_name"
+		android:theme="@android:style/Theme.Holo.Light"
+	>
 		<activity
-				android:name=".BluetoothSearchActivity"
+			android:name="com.larc.bluetoothconnect.BluetoothSearchActivity"
 			android:label="@string/app_name"
-			android:launchMode="singleTop">
+		>
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
-		<activity
-			android:name=".WaveformActivity">
+		<activity android:name=".WaveformActivity">
+		</activity>
+
+		<activity android:name="com.larc.bluetoothconnect.DeviceListActivity">
 		</activity>
 
 	</application>

@@ -5,7 +5,9 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -24,6 +26,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.larc.waveform.R;
+import com.larc.waveform.R.id;
+import com.larc.waveform.R.layout;
+import com.larc.waveform.R.menu;
+import com.larc.waveform.R.string;
 
 //import com.larc.bluetoothchat.R;
 
@@ -32,9 +38,11 @@ import com.larc.waveform.R;
  */
 
 public class BluetoothSearchActivity extends Activity {
+	private static final boolean IS_HONEYCOMB = Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB;
+	
 	// // Debugging
 	private static final String TAG = "BluetoothChat";
-	private static final boolean D = true;
+	private static final boolean Debug = true;
 
 	// // Message types sent from the BluetoothChatService Handler
 	public static final int MESSAGE_STATE_CHANGE = 1;
@@ -60,7 +68,7 @@ public class BluetoothSearchActivity extends Activity {
 	// Name of the connected device
 	private String mConnectedDeviceName = null;
 	private ArrayAdapter<String> mConversationArrayAdapter;
-	private ArrayAdapter<String> mDataArrayAdapter;
+//	private ArrayAdapter<String> mDataArrayAdapter;
 	// String buffer for outgoing messages
 	private StringBuffer mOutStringBuffer;
 	// Local Bluetooth adapter
@@ -74,7 +82,7 @@ public class BluetoothSearchActivity extends Activity {
 		super.onCreate(savedInstanceState);
 
 		// for Debug
-		if (D)
+		if (Debug)
 			Log.e(TAG, "+++ ON CREATE +++");
 
 		// Set up the window layout
@@ -95,7 +103,7 @@ public class BluetoothSearchActivity extends Activity {
 	@Override
 	public void onStart() {
 		super.onStart();
-		if (D)
+		if (Debug)
 			Log.e(TAG, "++ ON START ++");
 
 		// If BT is not on, request that it be enabled.
@@ -114,7 +122,7 @@ public class BluetoothSearchActivity extends Activity {
 	@Override
 	public synchronized void onResume() {
 		super.onResume();
-		if (D)
+		if (Debug)
 			Log.e(TAG, "+ ON RESUME +");
 
 		// Performing this check in onResume() covers the case in which BT was
@@ -135,9 +143,9 @@ public class BluetoothSearchActivity extends Activity {
 		Log.d(TAG, "setupChat()");
 
 		// Initialize the array adapter for the data thread
-		mDataArrayAdapter = new ArrayAdapter<String>(this, R.layout.message);
+		mConversationArrayAdapter = new ArrayAdapter<String>(this, R.layout.message);
 		mDataView = (ListView) findViewById(R.id.in);
-		mDataView.setAdapter(mDataArrayAdapter);
+		mDataView.setAdapter(mConversationArrayAdapter);
 
 		// Initialize the compose field with a listener for the return key
 		mOutEditText = (EditText) findViewById(R.id.edit_text_out);
@@ -165,14 +173,14 @@ public class BluetoothSearchActivity extends Activity {
 	@Override
 	public synchronized void onPause() {
 		super.onPause();
-		if (D)
+		if (Debug)
 			Log.e(TAG, "- ON PAUSE -");
 	}
 
 	@Override
 	public void onStop() {
 		super.onStop();
-		if (D)
+		if (Debug)
 			Log.e(TAG, "-- ON STOP --");
 	}
 
@@ -182,12 +190,12 @@ public class BluetoothSearchActivity extends Activity {
 		// Stop the Bluetooth chat services
 		if (mConnectService != null)
 			mConnectService.stop();
-		if (D)
+		if (Debug)
 			Log.e(TAG, "--- ON DESTROY ---");
 	}
 
 	private void ensureDiscoverable() {
-		if (D)
+		if (Debug)
 			Log.d(TAG, "ensure discoverable");
 		if (mBluetoothAdapter.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
 			Intent discoverableIntent = new Intent(
@@ -235,20 +243,28 @@ public class BluetoothSearchActivity extends Activity {
 				String message = view.getText().toString();
 				sendMessage(message);
 			}
-			if (D)
+			if (Debug)
 				Log.i(TAG, "END onEditorAction");
 			return true;
 		}
 	};
 
 	private final void setStatus(int resId) {
-		final ActionBar actionBar = getActionBar();
-		actionBar.setSubtitle(resId);
+		if(IS_HONEYCOMB){
+			final ActionBar actionBar = getActionBar();
+			if(actionBar != null){
+				actionBar.setSubtitle(resId);
+			}
+		}
 	}
 
 	private final void setStatus(CharSequence subTitle) {
-		final ActionBar actionBar = getActionBar();
-		actionBar.setSubtitle(subTitle);
+		if (IS_HONEYCOMB) {
+			final ActionBar actionBar = getActionBar();
+			if (actionBar != null) {
+				actionBar.setSubtitle(subTitle);
+			}
+		}
 	}
 
 	private final Handler mHandler = new Handler() {
@@ -256,7 +272,7 @@ public class BluetoothSearchActivity extends Activity {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case MESSAGE_STATE_CHANGE:
-				if (D)
+				if (Debug)
 					Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
 				switch (msg.arg1) {
 				case BluetoothService.STATE_CONNECTED:
@@ -303,7 +319,7 @@ public class BluetoothSearchActivity extends Activity {
 	};
 
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (D)
+		if (Debug)
 			Log.d(TAG, "onActivityResult " + resultCode);
 		switch (requestCode) {
 		case REQUEST_CONNECT_DEVICE_SECURE:

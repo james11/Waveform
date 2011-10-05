@@ -23,6 +23,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.larc.waveform.R;
+import com.larc.waveform.R.id;
+import com.larc.waveform.R.layout;
+import com.larc.waveform.R.string;
 
 /**
  * This Activity appears as a dialog. It lists any paired devices and devices
@@ -76,9 +79,11 @@ public class DeviceListActivity extends Activity {
 		// Initialize array adapters. One for already paired devices and
 		// one for newly discovered devices
 		mPairedDevicesArrayAdapter = new ArrayAdapter<String>(this,
-				R.layout.device_name);
+				android.R.layout.simple_list_item_1);
+//				R.layout.device_name);
 		mNewDevicesArrayAdapter = new ArrayAdapter<String>(this,
-				R.layout.device_name);
+				android.R.layout.simple_list_item_1);
+//				R.layout.device_name);
 
 		// Find and set up the ListView for paired devices
 		ListView pairedListView = (ListView) findViewById(R.id.paired_devices);
