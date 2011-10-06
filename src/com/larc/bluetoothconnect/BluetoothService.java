@@ -198,12 +198,12 @@ public class BluetoothService {
 			Log.d(TAG, "connect to: " + device);
 
 		// Cancel any thread attempting to make a connection
-		if (mState == STATE_CONNECTING) {
+//		if (mState == STATE_CONNECTING) {
 			if (mConnectThread != null) {
 				mConnectThread.cancel();
 				mConnectThread = null;
 			}
-		}
+//		}
 
 		// Cancel any thread currently running a connection
 		if (mConnectedThread != null) {
@@ -257,15 +257,17 @@ public class BluetoothService {
 		mConnectedThread = new ConnectedThread(socket, socketType);
 		mConnectedThread.start();
 
+		setState(STATE_CONNECTED);
 		// Send the name of the connected device back to the UI Activity
 		Message msg = mHandler
-				.obtainMessage(MESSAGE_DEVICE_NAME);
-		Bundle bundle = new Bundle();
-		bundle.putString(BluetoothSearchActivity.DEVICE_NAME, device.getName());
-		msg.setData(bundle);
+				.obtainMessage(MESSAGE_STATE_CHANGE);
+//				.obtainMessage(MESSAGE_DEVICE_NAME);
+				
+//		Bundle bundle = new Bundle();
+//		bundle.putString(BluetoothSearchActivity.DEVICE_NAME, device.getName());
+//		msg.setData(bundle);
 		mHandler.sendMessage(msg);
-
-		setState(STATE_CONNECTED);
+		
 	}
 
 	/**
