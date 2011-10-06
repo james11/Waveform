@@ -357,6 +357,13 @@ public class WaveformActivity extends Activity {
 		public void onConnectionFailed(){
 			Toast.makeText(WaveformActivity.this, "Connection failed", Toast.LENGTH_SHORT).show();
 		}
+
+		@Override
+		public void onConnectionLost() {
+			Toast.makeText(WaveformActivity.this, "Connection lost", Toast.LENGTH_SHORT).show();
+		}
+		
+		
 	};
 	
 	private void ensureDiscoverable() {

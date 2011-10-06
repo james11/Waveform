@@ -43,6 +43,7 @@ public class BluetoothService {
 	public static final int MESSAGE_WRITE = 3;
 	public static final int MESSAGE_DEVICE_NAME = 4;
 	public static final int MESSAGE_CONNECTION_FAILED = 5;
+	public static final int MESSAGE_ON_CONNECTION_LOST = 6;
 	
 	// Debugging
 	private static final String TAG = "BluetoothChatService";
@@ -96,11 +97,17 @@ public class BluetoothService {
 				break;
 			case MESSAGE_CONNECTION_FAILED:
 				onConnectionFailed();
+			case MESSAGE_ON_CONNECTION_LOST:
+				onConnectionLost();
 				break;
 			}
 		}
 		
 		public void onConnectionFailed(){
+			
+		}
+		
+		public void onConnectionLost(){
 			
 		}
 		
@@ -174,7 +181,7 @@ public class BluetoothService {
 			mConnectedThread.cancel();
 			mConnectedThread = null;
 		}
-
+		
 		setState(STATE_LISTEN);
 
 		// Start the thread to listen on a BluetoothServerSocket
@@ -338,7 +345,7 @@ public class BluetoothService {
 	private void onConnectionLost() {
 		// Send a failure message back to the Activity
 		Message msg = mHandler
-				.obtainMessage(MESSAGE_CONNECTION_FAILED);
+				.obtainMessage(MESSAGE_ON_CONNECTION_LOST);
 		Bundle bundle = new Bundle();
 		bundle.putString(BluetoothSearchActivity.TOAST,
 				"Device connection was lost");
