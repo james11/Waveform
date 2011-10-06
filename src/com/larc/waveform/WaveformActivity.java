@@ -158,6 +158,9 @@ public class WaveformActivity extends Activity {
 			public void onClick(View view) {
 				// Log.v("Wave", "ButtonPauseClicked");
 				pauseAndStart();
+				if(mBluetoothService!=null){
+					mBluetoothService.startSendingFakeData();
+				}
 			}
 		});
 
@@ -170,16 +173,6 @@ public class WaveformActivity extends Activity {
 
 		refreshSignal();
 	}
-	
-	
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-		setupConnect();
-	}
-
-
 
 	private Button.OnClickListener mButtonClickListener = new Button.OnClickListener() {
 		// @Override
@@ -228,7 +221,6 @@ public class WaveformActivity extends Activity {
 				mButtonPause.setTextColor(COLOR_TEXT_SELECTED);
 				wave.stop();
 			}
-			mBluetoothService.startSendingFakeData();
 			mPause = true;
 		} else {
 			mPause = false;
@@ -236,7 +228,6 @@ public class WaveformActivity extends Activity {
 				mButtonPause.setTextColor(COLOR_TEXT_NORMAL);
 				wave.start();
 			}
-			mBluetoothService.stopSendingFakeData();
 		}
 	}
 
@@ -351,19 +342,21 @@ public class WaveformActivity extends Activity {
 
 		@Override
 		public void onMessageRead(byte[] data) {
+			if(data.length>1){
+//				for (WaveformView wave : mWaveformArray) {
+//					int value = Byte.valueOf(data[0]);
+//					value = Math.abs(value);
+//					value %= 100;
+//					value -= 50;
+//					wave.setCurrentData(0, value);
+//				}
+			}
 		}
 		
 		@Override
 		public void onConnectionFailed(){
 			Toast.makeText(WaveformActivity.this, "Connection failed", Toast.LENGTH_SHORT).show();
 		}
-
-		@Override
-		public void onConnectionLost() {
-			Toast.makeText(WaveformActivity.this, "Connection lost", Toast.LENGTH_SHORT).show();
-		}
-		
-		
 	};
 	
 	private void ensureDiscoverable() {
@@ -405,9 +398,6 @@ public class WaveformActivity extends Activity {
 						Toast.LENGTH_SHORT).show();
 				finish();
 			}
-			break;
-		default:
-			break;
 		}
 	}
 	
@@ -415,16 +405,16 @@ public class WaveformActivity extends Activity {
 		// Get the BluetoothDevice object
 		BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(macAddress);
 		// Attempt to connect to the device
-		setupConnect();
+		if(mBluetoothService == null){
+			setupConnect();
+		}
 		mBluetoothService.connect(device, secure);
 	}
 	
 	private void setupConnect() {
 		// Initialize the BluetoothChatService to perform bluetooth connections
-		if(mBluetoothService == null){
-			mBluetoothService = new DataReceiveService(this, mBluetoothHandler);
-			mBluetoothService.startListening();
-		}
+		mBluetoothService = new DataReceiveService(this, mBluetoothHandler);
+		mBluetoothService.startListening();
 	}
 	
 }
