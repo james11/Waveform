@@ -45,7 +45,7 @@ public class BluetoothService {
 	public static final int MESSAGE_CONNECTION_FAILED = 5;
 	
 	// Debugging
-	protected static final String TAG = "BluetoothChatService";
+	private static final String TAG = "BluetoothChatService";
 	private static final boolean D = true;
 
 	// Name for the SDP record when creating server socket
@@ -574,7 +574,7 @@ public class BluetoothService {
 		public void write(byte[] buffer) {
 			try {
 				mmOutStream.write(buffer);
-				Log.v(TAG, "write data "+ new String(buffer));
+
 				// Share the sent message back to the UI Activity
 				mHandler.obtainMessage(MESSAGE_WRITE,
 						-1, -1, buffer).sendToTarget();
