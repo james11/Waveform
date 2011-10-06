@@ -378,9 +378,6 @@ public class BluetoothService {
 		}
 
 		public void run() {
-			if(mmServerSocket == null){
-				return;
-			}
 			if (D)
 				Log.d(TAG, "Socket Type: " + mSocketType
 						+ "BEGIN mAcceptThread" + this);
