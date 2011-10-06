@@ -1,15 +1,10 @@
 package com.larc.waveform.service;
 
-import java.io.StringWriter;
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import android.content.Context;
 import android.os.Handler;
-import android.text.InputFilter.LengthFilter;
-import android.util.Log;
 
 import com.larc.bluetoothconnect.BluetoothService;
 
@@ -17,8 +12,6 @@ public class DataReceiveService extends BluetoothService {
 	
 	private static final byte SEPERATOR = 'd';
 	private ArrayList<Integer> mDataArray = new ArrayList<Integer>();
-	private WritingThread mWritingThread;
-	
 	public DataReceiveService(Context context, Handler handler) {
 		super(context, handler);
 	}
@@ -37,7 +30,7 @@ public class DataReceiveService extends BluetoothService {
 					mDataArray.add(v);
 				}
 			}
-			offset = i;
+				
 		}
 	}
 	
@@ -50,51 +43,4 @@ public class DataReceiveService extends BluetoothService {
 		}
 	}
 	
-	public synchronized void startSendingFakeData(){
-		if(mWritingThread == null){
-			mWritingThread = new WritingThread();
-			Log.d("Test", "start sending data");
-			mWritingThread.start();
-		}
-	}
-	
-	public synchronized void stopSendingFakeData(){
-		if(mWritingThread != null){
-			mWritingThread.stopRunning();
-		}
-	}
-	
-	private class WritingThread extends Thread{
-		
-		private boolean isRunning = true;
-		String pattern = "000d010d020d040d050d040d020d010d000d-10d-20d-40d-50d-40d-20d-10d";
-			
-		@Override
-		public void run(){
-			isRunning = true;
-			int patternLength = pattern.length();
-			int offset = 0;
-			while(isRunning){
-				byte[] data = new byte[4];
-				if(offset + 3 >= patternLength){
-					offset = 0;
-				}
-				pattern.getBytes(offset, offset+3,data,0);
-				
-				if(data != null){
-					DataReceiveService.this.write(data);
-				}
-				try {
-					Thread.sleep(300);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-			mWritingThread = null;
-		}
-
-		public void stopRunning() {
-			isRunning = false;
-		}
-	}
 }

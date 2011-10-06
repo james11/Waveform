@@ -21,6 +21,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
+import com.larc.waveform.R;
+
+
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
@@ -30,6 +33,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 
 /**
  * This class does all the work for setting up and managing Bluetooth
@@ -42,7 +46,7 @@ public class BluetoothService {
 	public static final int MESSAGE_READ = 2;
 	public static final int MESSAGE_WRITE = 3;
 	public static final int MESSAGE_DEVICE_NAME = 4;
-	public static final int MESSAGE_CONNECTION_FAILED = 5;
+	public static final int MESSAGE_TOAST = 5;
 	
 	// Debugging
 	private static final String TAG = "BluetoothChatService";
@@ -87,21 +91,18 @@ public class BluetoothService {
 			case MESSAGE_WRITE:
 				byte[] writeBuf = (byte[]) msg.obj;
 				onMessageWrite(writeBuf);
+//				String writeMessage = new String(writeBuf);
 				break;
 			case MESSAGE_READ:
 				byte[] readBuf = (byte[]) msg.obj;
 				onMessageRead(readBuf);
+//				String readMessage = new String(readBuf, 0, msg.arg1);
 				break;
 			case MESSAGE_DEVICE_NAME:
 				break;
-			case MESSAGE_CONNECTION_FAILED:
-				onConnectionFailed();
+			case MESSAGE_TOAST:
 				break;
 			}
-		}
-		
-		public void onConnectionFailed(){
-			
 		}
 		
 		public void onMessageStateChange(int state){
@@ -159,7 +160,7 @@ public class BluetoothService {
 	 * Start the chat service. Specifically start AcceptThread to begin a
 	 * session in listening (server) mode. Called by the Activity onResume()
 	 */
-	public synchronized void startListening() {
+	public synchronized void start() {
 		if (D)
 			Log.d(TAG, "start");
 
@@ -228,7 +229,7 @@ public class BluetoothService {
 	 * @param device
 	 *            The BluetoothDevice that has been connected
 	 */
-	protected synchronized void onConnected(BluetoothSocket socket,
+	public synchronized void connected(BluetoothSocket socket,
 			BluetoothDevice device, final String socketType) {
 		if (D)
 			Log.d(TAG, "connected, Socket Type:" + socketType);
@@ -323,22 +324,27 @@ public class BluetoothService {
 	/**
 	 * Indicate that the connection attempt failed and notify the UI Activity.
 	 */
-	private void onConnectionFailed() {
+	private void connectionFailed() {
 		// Send a failure message back to the Activity
-		Message msg = mHandler.obtainMessage(MESSAGE_CONNECTION_FAILED);
+		Message msg = mHandler
+				.obtainMessage(MESSAGE_TOAST);
+		Bundle bundle = new Bundle();
+		bundle.putString(BluetoothSearchActivity.TOAST,
+				"Unable to connect device");
+		msg.setData(bundle);
 		mHandler.sendMessage(msg);
 
 		// Start the service over to restart listening mode
-		startListening();
+		BluetoothService.this.start();
 	}
 
 	/**
 	 * Indicate that the connection was lost and notify the UI Activity.
 	 */
-	private void onConnectionLost() {
+	private void connectionLost() {
 		// Send a failure message back to the Activity
 		Message msg = mHandler
-				.obtainMessage(MESSAGE_CONNECTION_FAILED);
+				.obtainMessage(MESSAGE_TOAST);
 		Bundle bundle = new Bundle();
 		bundle.putString(BluetoothSearchActivity.TOAST,
 				"Device connection was lost");
@@ -346,7 +352,7 @@ public class BluetoothService {
 		mHandler.sendMessage(msg);
 
 		// Start the service over to restart listening mode
-		BluetoothService.this.startListening();
+		BluetoothService.this.start();
 	}
 
 	/**
@@ -405,7 +411,7 @@ public class BluetoothService {
 						case STATE_LISTEN:
 						case STATE_CONNECTING:
 							// Situation normal. Start the connected thread.
-							onConnected(socket, socket.getRemoteDevice(),
+							connected(socket, socket.getRemoteDevice(),
 									mSocketType);
 							break;
 						case STATE_NONE:
@@ -490,7 +496,7 @@ public class BluetoothService {
 					Log.e(TAG, "unable to close() " + mSocketType
 							+ " socket during connection failure", e2);
 				}
-				onConnectionFailed();
+				connectionFailed();
 				return;
 			}
 
@@ -500,7 +506,7 @@ public class BluetoothService {
 			}
 
 			// Start the connected thread
-			onConnected(mmSocket, mmDevice, mSocketType);
+			connected(mmSocket, mmDevice, mSocketType);
 		}
 
 		public void cancel() {
@@ -557,9 +563,9 @@ public class BluetoothService {
 							buffer).sendToTarget();
 				} catch (IOException e) {
 					Log.e(TAG, "disconnected", e);
-					onConnectionLost();
+					connectionLost();
 					// Start the service over to restart listening mode
-					BluetoothService.this.startListening();
+					BluetoothService.this.start();
 					break;
 				}
 			}
