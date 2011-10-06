@@ -134,7 +134,7 @@ public class BluetoothSearchActivity extends Activity {
 			// started already
 			if (mConnectService.getState() == BluetoothService.STATE_NONE) {
 				// Start the Bluetooth connect services
-				mConnectService.start();
+				mConnectService.startListening();
 			}
 		}
 	}
