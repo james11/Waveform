@@ -103,25 +103,15 @@ public class BluetoothService {
 			}
 		}
 		
-		public void onConnectionFailed(){
-			
-		}
+		public void onConnectionFailed(){}
 		
-		public void onConnectionLost(){
-			
-		}
+		public void onConnectionLost(){}
 		
-		public void onMessageStateChange(int state){
-			
-		}
+		public void onMessageStateChange(int state){}
 		
-		public void onMessageWrite(byte[] data){
-			
-		}
+		public void onMessageWrite(byte[] data){}
 		
-		public void onMessageRead(byte[] data){
-			
-		}
+		public void onMessageRead(byte[] data){}
 		
 	}
 	
@@ -323,8 +313,10 @@ public class BluetoothService {
 				return;
 			r = mConnectedThread;
 		}
+		if( r!= null){
+			r.write(out);
+		}
 		// Perform the write unsynchronized
-		r.write(out);
 	}
 
 	/**

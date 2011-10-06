@@ -1,14 +1,10 @@
 package com.larc.waveform.service;
 
-import java.io.StringWriter;
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import android.content.Context;
 import android.os.Handler;
-import android.text.InputFilter.LengthFilter;
 import android.util.Log;
 
 import com.larc.bluetoothconnect.BluetoothService;
