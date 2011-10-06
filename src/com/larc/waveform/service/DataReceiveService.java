@@ -1,14 +1,11 @@
 package com.larc.waveform.service;
 
-import java.io.StringWriter;
-import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import android.content.Context;
 import android.os.Handler;
-import android.text.InputFilter.LengthFilter;
 import android.util.Log;
 
 import com.larc.bluetoothconnect.BluetoothService;
@@ -25,6 +22,7 @@ public class DataReceiveService extends BluetoothService {
 
 	@Override
 	protected void onDataRead(int length, byte[] data) {
+		Log.v(TAG, "read "+length+":" + new String(data));
 		int offset = 0;
 		byte[] value = new byte[5];
 		for(int i=0; i< length; i++){
@@ -36,8 +34,8 @@ public class DataReceiveService extends BluetoothService {
 					int v = Integer.parseInt(s);
 					mDataArray.add(v);
 				}
+				offset = i+1;
 			}
-			offset = i;
 		}
 	}
 	
@@ -79,8 +77,8 @@ public class DataReceiveService extends BluetoothService {
 				if(offset + 3 >= patternLength){
 					offset = 0;
 				}
-				pattern.getBytes(offset, offset+3,data,0);
-				
+				data = pattern.substring(offset, offset+4).getBytes(Charset.forName("ASCII"));
+				offset += 4;
 				if(data != null){
 					DataReceiveService.this.write(data);
 				}
