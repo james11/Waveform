@@ -158,9 +158,6 @@ public class WaveformActivity extends Activity {
 			public void onClick(View view) {
 				// Log.v("Wave", "ButtonPauseClicked");
 				pauseAndStart();
-				if(mBluetoothService!=null){
-					mBluetoothService.startSendingFakeData();
-				}
 			}
 		});
 
@@ -317,23 +314,12 @@ public class WaveformActivity extends Activity {
 
 		@Override
 		public void onMessageStateChange(int state) {
-			String text = "";
 			switch(state){
 			case BluetoothService.STATE_CONNECTED:
-				text = "Connected";
-				break;
 			case BluetoothService.STATE_CONNECTING:
-				text = "Connecting";
-				break;
 			case BluetoothService.STATE_LISTEN:
-				text = "Listening";
-				break;
-			default:
 			case BluetoothService.STATE_NONE:
-				text = "None";
-				break;
 			}
-			Toast.makeText(WaveformActivity.this, text, Toast.LENGTH_SHORT).show();
 		}
 
 		@Override
@@ -353,10 +339,6 @@ public class WaveformActivity extends Activity {
 			}
 		}
 		
-		@Override
-		public void onConnectionFailed(){
-			Toast.makeText(WaveformActivity.this, "Connection failed", Toast.LENGTH_SHORT).show();
-		}
 	};
 	
 	private void ensureDiscoverable() {
@@ -414,7 +396,7 @@ public class WaveformActivity extends Activity {
 	private void setupConnect() {
 		// Initialize the BluetoothChatService to perform bluetooth connections
 		mBluetoothService = new DataReceiveService(this, mBluetoothHandler);
-		mBluetoothService.startListening();
+
 	}
 	
 }
