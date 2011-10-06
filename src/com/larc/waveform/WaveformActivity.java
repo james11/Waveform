@@ -75,35 +75,6 @@ public class WaveformActivity extends Activity {
 		}
 		
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-//
-//		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-//		if (mBluetoothAdapter == null) {
-//			Toast.makeText(this, "No Bluetooth Communication",
-//					Toast.LENGTH_LONG).show();
-//			finish();
-//			return;
-//		}
-
-		// if (!mBluetoothAdapter.isEnabled()){
-		// Intent enableIntent = new
-		// Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-		// startActivityForResult(enableIntent, RESULT_OK);
-		// }
-		//
-//		Set<BluetoothDevice> pairedDevices = mBluetoothAdapter
-//				.getBondedDevices();
-//		if (pairedDevices.size() > 0) {
-//			findViewById(R.id.title_paired_devices).setVisibility(View.VISIBLE);
-//			for (BluetoothDevice device : pairedDevices) {
-//				mPairedDevicesArrayAdapter.add(device.getName() + "\n"
-//						+ device.getAddress());
-//			}
-//		} else {
-//			String noDevices = getResources().getText(R.string.none_paired)
-//					.toString();
-//			mPairedDevicesArrayAdapter.add(noDevices);
-//		}
-		
 
 		mButtonPause = (Button) findViewById(R.id.buttonPause);
 		mButtonEEG = (Button) findViewById(R.id.buttonEEG);
@@ -171,6 +142,16 @@ public class WaveformActivity extends Activity {
 		refreshSignal();
 	}
 
+	
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		setupConnect();
+	}
+
+
+
 	private Button.OnClickListener mButtonClickListener = new Button.OnClickListener() {
 		// @Override
 		public void onClick(View v) {
@@ -218,12 +199,18 @@ public class WaveformActivity extends Activity {
 				mButtonPause.setTextColor(COLOR_TEXT_SELECTED);
 				wave.stop();
 			}
+			if(mBluetoothService != null){
+				mBluetoothService.startSendingFakeData();
+			}
 			mPause = true;
 		} else {
 			mPause = false;
 			for (WaveformView wave : mWaveformArray) {
 				mButtonPause.setTextColor(COLOR_TEXT_NORMAL);
 				wave.start();
+			}
+			if(mBluetoothService != null){
+				mBluetoothService.stopSendingFakeData();
 			}
 		}
 	}
@@ -273,7 +260,7 @@ public class WaveformActivity extends Activity {
 					wave.setCurrentData(0, data);
 				}
 			}
-			mHandler.postDelayed(this, 20);
+			mHandler.postDelayed(this, 5);
 		}
 
 	};
@@ -314,12 +301,23 @@ public class WaveformActivity extends Activity {
 
 		@Override
 		public void onMessageStateChange(int state) {
+			String text = "";
 			switch(state){
 			case BluetoothService.STATE_CONNECTED:
+				text = "connected";
+				break;
 			case BluetoothService.STATE_CONNECTING:
+				text = "connecting";
+				break;
 			case BluetoothService.STATE_LISTEN:
+				text = "listening";
+				break;
+			default:
 			case BluetoothService.STATE_NONE:
+				text = "none";
+				break;
 			}
+			Toast.makeText(WaveformActivity.this, text, Toast.LENGTH_SHORT).show();
 		}
 
 		@Override
@@ -328,15 +326,6 @@ public class WaveformActivity extends Activity {
 
 		@Override
 		public void onMessageRead(byte[] data) {
-			if(data.length>1){
-//				for (WaveformView wave : mWaveformArray) {
-//					int value = Byte.valueOf(data[0]);
-//					value = Math.abs(value);
-//					value %= 100;
-//					value -= 50;
-//					wave.setCurrentData(0, value);
-//				}
-			}
 		}
 		
 	};
@@ -387,15 +376,16 @@ public class WaveformActivity extends Activity {
 		// Get the BluetoothDevice object
 		BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(macAddress);
 		// Attempt to connect to the device
-		if(mBluetoothService == null){
-			setupConnect();
-		}
+		setupConnect();
 		mBluetoothService.connect(device, secure);
 	}
 	
 	private void setupConnect() {
 		// Initialize the BluetoothChatService to perform bluetooth connections
-		mBluetoothService = new DataReceiveService(this, mBluetoothHandler);
+		if(mBluetoothService == null){
+			mBluetoothService = new DataReceiveService(this, mBluetoothHandler);
+			mBluetoothService.start();
+		}
 
 	}
 	
