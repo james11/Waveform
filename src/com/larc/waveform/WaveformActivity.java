@@ -412,16 +412,16 @@ public class WaveformActivity extends Activity {
 		// Get the BluetoothDevice object
 		BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(macAddress);
 		// Attempt to connect to the device
-		if(mBluetoothService == null){
 			setupConnect();
-		}
 		mBluetoothService.connect(device, secure);
 	}
 	
 	private void setupConnect() {
 		// Initialize the BluetoothChatService to perform bluetooth connections
-		mBluetoothService = new DataReceiveService(this, mBluetoothHandler);
-		mBluetoothService.startListening();
+		if(mBluetoothService == null){
+			mBluetoothService = new DataReceiveService(this, mBluetoothHandler);
+			mBluetoothService.startListening();
+		}
 	}
 	
 }
