@@ -19,12 +19,12 @@
 			android:name="com.larc.bluetoothconnect.BluetoothSearchActivity"
 			android:label="@string/app_name"
 		>
+		</activity>
+		<activity android:name=".WaveformActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
-		</activity>
-		<activity android:name=".WaveformActivity">
 		</activity>
 
 		<activity android:name="com.larc.bluetoothconnect.DeviceListActivity">

@@ -79,7 +79,7 @@ public class WaveformView extends ImageView {
 			int size = data.size();
 			if (size <= 0)
 				size = 1;
-			int range = data.lowerBound - data.upperBound;
+			int range = data.upperBound - data.lowerBound;
 			float deltaX = (float) width / (float) size;
 			float deltaY = (float) height / (float) range;
 			float base = height / 2;

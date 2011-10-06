@@ -1,19 +1,26 @@
 package com.larc.waveform;
 
 import android.app.Activity;
-//import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
-//import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
-//import android.widget.Toast;
+import android.widget.Toast;
 
+import com.larc.bluetoothconnect.BluetoothService;
+import com.larc.bluetoothconnect.DeviceListActivity;
 import com.larc.waveform.data.ReceivedData;
+import com.larc.waveform.service.DataReceiveService;
 
 public class WaveformActivity extends Activity {
 	private static final int DEFAULT_SIZE = 100;
@@ -24,6 +31,11 @@ public class WaveformActivity extends Activity {
 
 	private static final int SIGNAL_EEG = 0;
 	private static final int SIGNAL_DBS = 1;
+	
+	// Intent request codes
+	private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
+	private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
+	private static final int REQUEST_ENABLE_BT = 3;
 
 	/** Called when the activity is first created. */
 
@@ -45,6 +57,10 @@ public class WaveformActivity extends Activity {
 	private int mSignal = SIGNAL_EEG;
 	private int mSignalCheck = SIGNAL_DBS;
 	private boolean mPause = false;
+	
+	// Local Bluetooth adapter
+	private BluetoothAdapter mBluetoothAdapter = null;
+	private DataReceiveService mBluetoothService;
 
 //	private BluetoothAdapter mBluetoothAdapter;
 //	private ArrayAdapter<String> mPairedDevicesArrayAdapter;
@@ -57,6 +73,8 @@ public class WaveformActivity extends Activity {
 			mDbsData[i] = new ReceivedData();
 			mEegData[i] = new ReceivedData();
 		}
+		
+		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 //
 //		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 //		if (mBluetoothAdapter == null) {
@@ -246,15 +264,139 @@ public class WaveformActivity extends Activity {
 
 	private Runnable mPushDataRunnable = new Runnable() {
 		public void run() {
-			int data = (int) (System.currentTimeMillis() % 100) - 50;
-			mDbsData[0].add(data);
-			mEegData[0].add(-data);
-			for (WaveformView wave : mWaveformArray) {
-				wave.setCurrentData(0, data);
+//			int data = (int) (System.currentTimeMillis() % 100) - 50;
+//			mDbsData[0].add(data);
+//			mEegData[0].add(-data);
+			if(mBluetoothService != null){
+				int data = mBluetoothService.getCurrentValue();
+				for (WaveformView wave : mWaveformArray) {
+					wave.setCurrentData(0, data);
+				}
 			}
-			mHandler.postDelayed(this, 10);
+			mHandler.postDelayed(this, 20);
 		}
 
 	};
 
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.menu,menu);
+		return true;
+	}
+	
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		Intent serverIntent = null;
+		switch (item.getItemId()) {
+		case R.id.secure_connect_scan:
+			// Launch the DeviceListActivity to see devices and do scan
+			serverIntent = new Intent(this, DeviceListActivity.class);
+			startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
+			return true;
+		case R.id.insecure_connect_scan:
+			// Launch the DeviceListActivity to see devices and do scan
+			serverIntent = new Intent(this, DeviceListActivity.class);
+			startActivityForResult(serverIntent,
+					REQUEST_CONNECT_DEVICE_INSECURE);
+			return true;
+		case R.id.discoverable:
+			// Ensure this device is discoverable by others
+			ensureDiscoverable();
+			return true;
+		}
+		return false;
+	}
+	
+	private BluetoothService.BluetoothEventHandler mBluetoothHandler = new BluetoothService.BluetoothEventHandler(){
+
+		@Override
+		public void onMessageStateChange(int state) {
+			switch(state){
+			case BluetoothService.STATE_CONNECTED:
+			case BluetoothService.STATE_CONNECTING:
+			case BluetoothService.STATE_LISTEN:
+			case BluetoothService.STATE_NONE:
+			}
+		}
+
+		@Override
+		public void onMessageWrite(byte[] data) {
+		}
+
+		@Override
+		public void onMessageRead(byte[] data) {
+			if(data.length>1){
+//				for (WaveformView wave : mWaveformArray) {
+//					int value = Byte.valueOf(data[0]);
+//					value = Math.abs(value);
+//					value %= 100;
+//					value -= 50;
+//					wave.setCurrentData(0, value);
+//				}
+			}
+		}
+		
+	};
+	
+	private void ensureDiscoverable() {
+		if (mBluetoothAdapter.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+			Intent discoverableIntent = new Intent(
+					BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+			discoverableIntent.putExtra(
+					BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+			startActivity(discoverableIntent);
+		}
+	}
+	
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		switch (requestCode) {
+		case REQUEST_CONNECT_DEVICE_SECURE:
+			// When DeviceListActivity returns with a device to connect
+			if (resultCode == Activity.RESULT_OK) {
+				String address = data.getExtras().getString(
+						DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+				connectDevice(address, true);
+			}
+			break;
+		case REQUEST_CONNECT_DEVICE_INSECURE:
+			// When DeviceListActivity returns with a device to connect
+			if (resultCode == Activity.RESULT_OK) {
+				String address = data.getExtras().getString(
+						DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+				connectDevice(address, false);
+			}
+			break;
+		case REQUEST_ENABLE_BT:
+			// When the request to enable Bluetooth returns
+			if (resultCode == Activity.RESULT_OK) {
+				// Bluetooth is now enabled, so set up a chat session
+				setupConnect();
+			} else {
+				// User did not enable Bluetooth or an error occurred
+				Toast.makeText(this, R.string.bt_not_enabled_leaving,
+						Toast.LENGTH_SHORT).show();
+				finish();
+			}
+		}
+	}
+	
+	private void connectDevice(String macAddress, boolean secure) {
+		// Get the BluetoothDevice object
+		BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(macAddress);
+		// Attempt to connect to the device
+		if(mBluetoothService == null){
+			setupConnect();
+		}
+		mBluetoothService.connect(device, secure);
+	}
+	
+	private void setupConnect() {
+		// Initialize the BluetoothChatService to perform bluetooth connections
+		mBluetoothService = new DataReceiveService(this, mBluetoothHandler);
+
+	}
+	
 }
