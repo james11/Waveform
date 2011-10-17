@@ -1,6 +1,5 @@
 package com.larc.waveform.service;
 
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,35 +11,64 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.larc.bluetoothconnect.BluetoothService;
+import com.larc.waveform.data.ReceivedData;
 
 public class DataReceiveService extends BluetoothService {
 	
 	private static final byte SEPERATOR = 'd';
-	private ArrayList<Integer> mDataArray = new ArrayList<Integer>();
-	private WritingThread mWritingThread;
+	private static DataReceiveService mInstance;
 	
-	public DataReceiveService(Context context, Handler handler) {
+	private ArrayList<Integer> mDataArray = new ArrayList<Integer>();
+	private ArrayList<int[]> mIntArrayList = new ArrayList<int[]>();
+	private WritingThread mWritingThread;
+	private int mCurrentValue;
+	
+	private DataReceiveService(Context context, Handler handler) {
 		super(context, handler);
+		mInstance  = this;
 	}
+	
+	private DataReceiveService(Context context) {
+		super(context);
+		mInstance = this;
+	}
+	
+	public static DataReceiveService getInstance(Context context){
+		if(mInstance == null){
+			mInstance = new DataReceiveService(context);
+		}
+		return mInstance;
+	}
+	
 
 	private ArrayList<Byte> mByteArray = new ArrayList<Byte>();
 	
 	private ByteArrayBuffer byteBuffer = new ByteArrayBuffer(4);
+	private ReceivedData mReceivedData = new ReceivedData();
+	
 	
 	@Override
 	protected void onDataRead(int length, byte[] data) {
-//		Log.v("Test","read: length"+new String(data) );
+		super.onDataRead(length, data);
+		mReceivedData.putData(length, data);
+//		int[] intArray = new int[data.length];
+//		for(int i=0; i< data.length; i++){
+//			intArray[i] = (int) data[i] & 0xFF; 
+//		}
+//		mCurrentValue = intArray[0];
+//		mIntArrayList.add(intArray);
+//		Log.v(TAG, "value="+mCurrentValue);
 		
-		if (length >=4){
-			decodeData(data, length);
-		}else{
-			byteBuffer.append(data, 0, length);
-		}
-		if(byteBuffer.length()>4){
-			decodeData(byteBuffer.buffer(), byteBuffer.length());
-			byteBuffer.clear();
-		}
-		
+	}
+	
+	public int[] getCurrentData(){
+//		int index = mIntArrayList.size() - 1;
+//		if(index >=0){
+//			return mIntArrayList.get(index);
+//		}else {
+//			return new int[0];
+//		}
+		return mReceivedData.getLatestData(4 ,400);
 	}
 	
 	private void decodeData(byte[] data, int length){
@@ -68,12 +96,7 @@ public class DataReceiveService extends BluetoothService {
 	}
 	
 	public int getCurrentValue(){
-		int index = mDataArray.size();
-		if(index > 0 ){
-			return mDataArray.get(index - 1);
-		} else {
-			return 0;
-		}
+		return mCurrentValue;
 	}
 	
 	public synchronized void startSendingFakeData(){

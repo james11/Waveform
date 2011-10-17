@@ -3,12 +3,14 @@ package com.larc.waveform;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.ListIterator;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.ImageView;
 
 public class WaveformView extends ImageView {
@@ -16,26 +18,57 @@ public class WaveformView extends ImageView {
 	private static final int DEFAULT_X_SIZE = 50;
 	private static final int DEFAULT_PAINT_COLOR = 0xFFFF0000;
 	private static final int DEFAULT_LINE_WIDTH = 2;
+	private static final int DRAWING_CYCLE = 4;
 
-	private int mUpdatePeriod = 10;
+	private int mUpdatePeriod = 5;
+	private int mUpdateCounter = 0;
+	
 	private Handler mRefreshHandler;
 
 	private ArrayList<DataSet> mDataSets;
+	
+	private WaveformAdapter mAdapter;
+	
+	public WaveformAdapter getAdapter() {
+		return mAdapter;
+	}
+
+	public void setAdapter(WaveformAdapter adapter) {
+		mAdapter = adapter;
+	}
+
+	public static class WaveformAdapter {
+		
+		public int[] getCurrentData(int set){
+			return null;
+		}
+		
+	}
 
 	Runnable mRefreshRunnable = new Runnable() {
 		public void run() {
 			for (int i = 0; i < mDataSets.size(); i++) {
-				mDataSets.get(i).push();    //???
+				if (mAdapter != null){
+					int[] value = mAdapter.getCurrentData(i);
+					mDataSets.get(i).pushData(value);
+				} else {
+					mDataSets.get(i).push();
+				}
 			}
-			WaveformView.this.invalidate();
+			
+			mUpdateCounter++;
+			if(mUpdateCounter >= DRAWING_CYCLE){
+				WaveformView.this.invalidate();
+				mUpdateCounter = 0;
+			}
 			mRefreshHandler.postDelayed(this, mUpdatePeriod);
 		}
 	};
 
 	@SuppressWarnings("serial")
 	private static class DataSet extends LinkedList<Integer> {
-		public int upperBound = 50;
-		public int lowerBound = -50;
+		public int upperBound = 255;
+		public int lowerBound = 0;
 		public int currentValue = 0;
 		private int paintColor = DEFAULT_PAINT_COLOR;
 		private int lineWidth = DEFAULT_LINE_WIDTH;
@@ -45,10 +78,27 @@ public class WaveformView extends ImageView {
 				add(0);
 			}
 		}
+		
+		
+		public void pushData(int[] value) {
+			if(value != null){
+				int size = value.length;
+				for(int i = 0; i < size ; i++){
+					pushValue(value[i]);
+				}
+				Log.v("Waveform", "size="+value.length);
+			}
+		}
 
-		public void push() {
-			add(currentValue);
+
+		public void pushValue(int value) {
+			currentValue = value;
+			add(value);
 			removeFirst();
+		}
+		
+		public void push(){
+			pushValue(currentValue);
 		}
 	}
 
@@ -82,7 +132,7 @@ public class WaveformView extends ImageView {
 			int range = data.upperBound - data.lowerBound;
 			float deltaX = (float) width / (float) size;
 			float deltaY = (float) height / (float) range;
-			float base = height / 2;
+			float base = (data.upperBound + data.lowerBound)/2;
 
 			Paint paint = new Paint();
 			paint.setColor(data.paintColor);
@@ -131,6 +181,7 @@ public class WaveformView extends ImageView {
 	public void setCurrentData(int dataSetId, int data) {
 		if (dataSetId >= 0 && dataSetId < mDataSets.size()) {
 			mDataSets.get(dataSetId).currentValue = data;
+			invalidate();
 		}
 	}
 	
@@ -138,14 +189,8 @@ public class WaveformView extends ImageView {
 		if (dataSetId >= 0 && dataSetId < mDataSets.size() && dataArray != null) {
 			DataSet dataSet = mDataSets.get(dataSetId);
 			int size = dataArray.length;
-			for(int i = 0; i < dataSet.size() ; i++){
-				int index = size - i -1;
-				if(index < size && index >= 0){
-					int value = dataArray[index];
-					dataSet.set(i, value);
-				}else{
-					dataSet.set(i, 0);
-				}
+			for(int i = 0; i < size ; i++){
+				dataSet.pushValue(dataArray[i]);
 			}
 		}
 	}

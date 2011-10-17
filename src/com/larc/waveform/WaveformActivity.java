@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -19,11 +18,12 @@ import android.widget.Toast;
 
 import com.larc.bluetoothconnect.BluetoothService;
 import com.larc.bluetoothconnect.DeviceListActivity;
+import com.larc.waveform.WaveformView.WaveformAdapter;
 import com.larc.waveform.data.ReceivedData;
 import com.larc.waveform.service.DataReceiveService;
 
 public class WaveformActivity extends Activity {
-	private static final int DEFAULT_SIZE = 100;
+	private static final int DEFAULT_SIZE = 800;
 	private static final int WAVEFORM_COUNT = 4;
 
 	private static final int COLOR_TEXT_NORMAL = Color.BLACK;
@@ -45,7 +45,6 @@ public class WaveformActivity extends Activity {
 	private LinearLayout mWaveformContainer;
 	private LinearLayout mChannelNameContainer;
 
-	private Handler mHandler;
 	private Button mButtonPause;
 	private Button mButtonEEG;
 	private Button mButtonDBS;
@@ -56,7 +55,7 @@ public class WaveformActivity extends Activity {
 
 	private int mSignal = SIGNAL_EEG;
 	private int mSignalCheck = SIGNAL_DBS;
-	private boolean mPause = false;
+	private boolean mPause = true;
 
 	// Local Bluetooth adapter
 	private BluetoothAdapter mBluetoothAdapter = null;
@@ -93,33 +92,28 @@ public class WaveformActivity extends Activity {
 			mChannelNameArray[i].setGravity(android.view.Gravity.CENTER);
 
 			mWaveformArray[i] = new WaveformView(this);
+			
 			//Orientation of views in Layout
 			mWaveformContainer.setOrientation(LinearLayout.VERTICAL);
 			mChannelNameContainer.setOrientation(LinearLayout.VERTICAL);
 			//add views
-			mWaveformContainer.addView(mWaveformArray[i], params);
 			mChannelNameContainer.addView(mChannelNameArray[i], params);
 
 		}
-
-		for (WaveformView wave : mWaveformArray) {
-
-			mWaveformArray[1].setLineColor(0, Color.GREEN);
-
-			mWaveformArray[2].setLineColor(0, Color.BLUE);
-
-			mWaveformArray[3].setLineColor(0, R.color.weak_yellow);
-
-			mTextView.setText("4-Channel DBS Signals");
-
-			mButtonDBS.setTextColor(COLOR_TEXT_SELECTED);
-			mButtonEEG.setTextColor(COLOR_TEXT_NORMAL);
-
-			wave.start();
-		}
+		mWaveformArray[0].setAdapter(mWaveformAdapter);
+		mWaveformContainer.addView(mWaveformArray[0], params);
+		
+		
+		mWaveformArray[1].setLineColor(0, Color.GREEN);
+		mWaveformArray[2].setLineColor(0, Color.BLUE);
+		mWaveformArray[3].setLineColor(0, R.color.weak_yellow);
+		
+		mTextView.setText("4-Channel DBS Signals");
+		mButtonDBS.setTextColor(COLOR_TEXT_SELECTED);
+		mButtonEEG.setTextColor(COLOR_TEXT_NORMAL);
+		
 
 		mButtonPause.setOnClickListener(new Button.OnClickListener() {
-
 			public void onClick(View view) {
 				pauseAndStart();
 			}
@@ -129,10 +123,11 @@ public class WaveformActivity extends Activity {
 		mButtonEEG.setOnClickListener(mButtonClickListener);
 		mButtonDBS.setOnClickListener(mButtonClickListener);
 
-		mHandler = new Handler();
-		mHandler.post(mPushDataRunnable);
+//		mHandler = new Handler();
+//		mHandler.post(mPushDataRunnable);
 
 		refreshSignal();
+		pauseAndStart();
 	}
 
 	@Override
@@ -187,19 +182,13 @@ public class WaveformActivity extends Activity {
 				mButtonPause.setTextColor(COLOR_TEXT_SELECTED);
 				wave.stop();
 			}
-			if (mBluetoothService != null) {
-				mBluetoothService.startSendingFakeData();
-			}
 			mPause = true;
 		} else {
 			mPause = false;
 			for (WaveformView wave : mWaveformArray) {
 				mButtonPause.setTextColor(COLOR_TEXT_NORMAL);
-				wave.start();
 			}
-			if (mBluetoothService != null) {
-				mBluetoothService.stopSendingFakeData();
-			}
+			mWaveformArray[0].start();
 		}
 	}
 
@@ -208,8 +197,8 @@ public class WaveformActivity extends Activity {
 			wave.removeAllDataSet();
 			wave.createNewDataSet(DEFAULT_SIZE);
 			// for (int i = 0; i < WAVEFORM_COUNT; i++) {
-			int[] dataArray = mDbsData[0].getData(DEFAULT_SIZE + 50);
-			wave.setData(0, dataArray);
+//			int[] dataArray = mDbsData[0].getData(DEFAULT_SIZE + 50);
+//			wave.setData(0, dataArray);
 			// }
 		}
 		mWaveformArray[1].setLineColor(0, Color.GREEN);
@@ -224,8 +213,8 @@ public class WaveformActivity extends Activity {
 			wave.removeAllDataSet();
 			wave.createNewDataSet(DEFAULT_SIZE);
 			// for (int i = 0; i < WAVEFORM_COUNT; i++) {
-			int[] dataArray = mEegData[0].getData(DEFAULT_SIZE);
-			wave.setData(0, dataArray);
+//			int[] dataArray = mEegData[0].getData(DEFAULT_SIZE);
+//			wave.setData(0, dataArray);
 			// }
 		}
 		mWaveformArray[1].setLineColor(0, Color.GREEN);
@@ -234,22 +223,37 @@ public class WaveformActivity extends Activity {
 
 		mWaveformArray[3].setLineColor(0, R.color.weak_yellow);
 	}
+	
+	private WaveformAdapter mWaveformAdapter = new WaveformAdapter(){
 
-	private Runnable mPushDataRunnable = new Runnable() {
-		public void run() {
-			// int data = (int) (System.currentTimeMillis() % 100) - 50;
-			// mDbsData[0].add(data);
-			// mEegData[0].add(-data);
-			if (mBluetoothService != null) {
-				int data = mBluetoothService.getCurrentValue();
-				for (WaveformView wave : mWaveformArray) {
-					wave.setCurrentData(0, data);
-				}
-			}
-			mHandler.postDelayed(this, 5);     //Set Delay for getting Data
+		@Override
+		public int[] getCurrentData(int set) {
+			return mBluetoothService.getCurrentData();
 		}
-
+		
 	};
+
+//	private Runnable mPushDataRunnable = new Runnable() {
+//		public void run() {
+//			if (mBluetoothService != null) {
+//				int[] data = mBluetoothService.getCurrentData();
+////				int size = data.length;
+////				int[] sampleData = new int[3];
+////				if(size >=3){
+////					sampleData[0] = data[0];
+////					sampleData[1] = data[size / 2];
+////					sampleData[2] = data[size -1];
+////				}
+//////				int value = mBluetoothService.getCurrentValue();
+//				for (WaveformView wave : mWaveformArray) {
+////					wave.setCurrentData(0, value);
+//					wave.setData(0, data);
+//				}
+//			}
+////			mHandler.postDelayed(this, 10);     //Set Delay for getting Data
+//		}
+//
+//	};
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -284,7 +288,7 @@ public class WaveformActivity extends Activity {
 	private BluetoothService.BluetoothEventHandler mBluetoothHandler = new BluetoothService.BluetoothEventHandler() {
 
 		@Override    
-		public void onMessageStateChange(int state) {
+		public void onStateChange(int state) {
 			String text = "";
 			switch (state) {
 			case BluetoothService.STATE_CONNECTED:
@@ -368,7 +372,8 @@ public class WaveformActivity extends Activity {
 	private void setupConnect() {
 		// Initialize the BluetoothChatService to perform bluetooth connections
 		if (mBluetoothService == null) {
-			mBluetoothService = new DataReceiveService(this, mBluetoothHandler);
+			mBluetoothService = DataReceiveService.getInstance(this);
+			mBluetoothService.setHandler(mBluetoothHandler);
 			mBluetoothService.start();
 		}
 
