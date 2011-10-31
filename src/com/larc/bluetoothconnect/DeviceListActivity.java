@@ -51,6 +51,7 @@ public class DeviceListActivity extends Activity {
 		// Setup the window
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_device_list);
+		setProgressBarIndeterminateVisibility(false);
 		
 		ListView pairedListView = (ListView) findViewById(R.id.pairedDevices);
 		ListView newDevicesListView = (ListView) findViewById(R.id.newDevices);
@@ -72,14 +73,14 @@ public class DeviceListActivity extends Activity {
 		scanButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				doDiscovery();
-				v.setVisibility(View.GONE);
+				v.setVisibility(View.GONE);			// After clicking the "scan" button , button will disappear .
 			}
 		});
 
 		// Initialize array adapters. One for already paired devices and
 		// one for newly discovered devices
 		mPairedDevicesArrayAdapter = new ArrayAdapter<String>(this,
-				android.R.layout.simple_list_item_1);
+				android.R.layout.simple_list_item_1);					/** what is "simple_list_item_1" ?? **/
 		mNewDevicesArrayAdapter = new ArrayAdapter<String>(this,
 				android.R.layout.simple_list_item_1);
 
@@ -91,8 +92,10 @@ public class DeviceListActivity extends Activity {
 		newDevicesListView.setAdapter(mNewDevicesArrayAdapter);
 		newDevicesListView.setOnItemClickListener(mDeviceClickListener);
 
+		
+		/** For scanning NewDeviceArrayAdapter **/
 		// Register for broadcasts when a device is discovered
-		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);		// set Intent for registerReceiver .
 		this.registerReceiver(mReceiver, filter);
 
 		// Register for broadcasts when discovery has finished
@@ -100,10 +103,12 @@ public class DeviceListActivity extends Activity {
 		this.registerReceiver(mReceiver, filter);
 
 		// Get the local Bluetooth adapter
-		mBtAdapter = BluetoothAdapter.getDefaultAdapter();
+		mBtAdapter = BluetoothAdapter.getDefaultAdapter();				/** why another BluetoothAdapter ?? **/
 
+		
+		/** For PairedDeviceArrayAdapter **/
 		// Get a set of currently paired devices
-		Set<BluetoothDevice> pairedDevices = mBtAdapter.getBondedDevices();
+		Set<BluetoothDevice> pairedDevices = mBtAdapter.getBondedDevices();	// Declare "paredDevice" here .
 
 		// If there are paired devices, add each one to the ArrayAdapter
 		if (pairedDevices.size() > 0) {
@@ -163,7 +168,7 @@ public class DeviceListActivity extends Activity {
 			// Get the device MAC address, which is the last 17 chars in the
 			// View
 			String info = ((TextView) v).getText().toString();
-			String address = info.substring(info.length() - 17);
+			String address = info.substring(info.length() - 17);				/***  ???  ***/
 
 			// Create the result Intent and include the MAC address
 			Intent intent = new Intent();

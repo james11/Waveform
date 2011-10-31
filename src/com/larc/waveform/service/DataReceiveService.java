@@ -68,7 +68,7 @@ public class DataReceiveService extends BluetoothService {
 //		}else {
 //			return new int[0];
 //		}
-		return mReceivedData.getLatestData(4 ,400);
+		return mReceivedData.getLatestData(500 ,400);
 	}
 	
 	private void decodeData(byte[] data, int length){

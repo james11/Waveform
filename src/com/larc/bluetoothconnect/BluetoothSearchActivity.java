@@ -283,7 +283,7 @@ public class BluetoothSearchActivity extends Activity {
 				case BluetoothService.STATE_CONNECTING:
 					setStatus(R.string.title_connecting);
 					break;
-				case BluetoothService.STATE_LISTEN:
+				case BluetoothService.STATE_LISTENING:
 				case BluetoothService.STATE_NONE:
 					setStatus(R.string.title_not_connected);
 					break;

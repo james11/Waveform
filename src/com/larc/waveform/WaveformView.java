@@ -15,28 +15,30 @@ import android.widget.ImageView;
 
 public class WaveformView extends ImageView {
 
-	private static final int DEFAULT_X_SIZE = 50;
+	private static final int DEFAULT_X_SIZE = 50;					// Size of DataSet ArrayList .
 	private static final int DEFAULT_PAINT_COLOR = 0xFFFF0000;
-	private static final int DEFAULT_LINE_WIDTH = 2;
+	private static final int DEFAULT_LINE_WIDTH = 3;
 	private static final int DRAWING_CYCLE = 4;
 
-	private int mUpdatePeriod = 5;
+	private int mUpdatePeriod = 2;									// Screen update frequency , larger --> lager
 	private int mUpdateCounter = 0;
 	
 	private Handler mRefreshHandler;
 
 	private ArrayList<DataSet> mDataSets;
 	
-	private WaveformAdapter mAdapter;
+	private WaveformAdapter mAdapter = new WaveformAdapter();
 	
-	public WaveformAdapter getAdapter() {
+	public WaveformAdapter getAdapter() {    //  no used here .
 		return mAdapter;
 	}
 
-	public void setAdapter(WaveformAdapter adapter) {
-		mAdapter = adapter;
+	// This block is used to set mAdapter : the member of WaveformAdapter .
+	public void setAdapter(WaveformAdapter adapter) {		
+		mAdapter = adapter;			// Set WaveformAdapter which is called adapter here to mAdapter .
 	}
 
+	// Class "WaveformAdapter" : Setup the class which can be @Overrided in WaveformActivity.java .
 	public static class WaveformAdapter {
 		
 		public int[] getCurrentData(int set){
@@ -44,18 +46,20 @@ public class WaveformView extends ImageView {
 		}
 		
 	}
-
+	
+	// Run .
 	Runnable mRefreshRunnable = new Runnable() {
 		public void run() {
 			for (int i = 0; i < mDataSets.size(); i++) {
-				if (mAdapter != null){
+				if (mAdapter != null){							// getCurrentData and pushData if there has data to adapt .
 					int[] value = mAdapter.getCurrentData(i);
 					mDataSets.get(i).pushData(value);
-				} else {
+				} else {										// push CurrentData again (two times) if there has no data to be adapted . 
 					mDataSets.get(i).push();
 				}
 			}
 			
+			// Update four WaveformView .
 			mUpdateCounter++;
 			if(mUpdateCounter >= DRAWING_CYCLE){
 				WaveformView.this.invalidate();
@@ -67,38 +71,40 @@ public class WaveformView extends ImageView {
 
 	@SuppressWarnings("serial")
 	private static class DataSet extends LinkedList<Integer> {
-		public int upperBound = 255;
+		public int upperBound = 767;
 		public int lowerBound = 0;
 		public int currentValue = 0;
 		private int paintColor = DEFAULT_PAINT_COLOR;
 		private int lineWidth = DEFAULT_LINE_WIDTH;
 
+		// fill the ArrayList with "0" at first .
 		public DataSet(int size) {
 			for (int i = 0; i < size; i++) {
 				add(0);
 			}
 		}
 		
-		
+		// get the size of "Value" , which is the number of times needed to pushValue() .
 		public void pushData(int[] value) {
 			if(value != null){
 				int size = value.length;
-				for(int i = 0; i < size ; i++){
+				for(int i = 0; i < size ; i++){   // for loop to call pushValue() .
 					pushValue(value[i]);
 				}
 				Log.v("Waveform", "size="+value.length);
 			}
 		}
 
-
+		// call pushValue() with "currentValue" one more time .
+		public void push(){
+			pushValue(currentValue);
+		}
+		
+		// remove first value , add current value to LSB and shift whole array .
 		public void pushValue(int value) {
 			currentValue = value;
 			add(value);
 			removeFirst();
-		}
-		
-		public void push(){
-			pushValue(currentValue);
 		}
 	}
 
@@ -106,22 +112,22 @@ public class WaveformView extends ImageView {
 		mDataSets = new ArrayList<DataSet>();
 		DataSet set = new DataSet(DEFAULT_X_SIZE);
 		mDataSets.add(set);
-		mRefreshHandler = new Handler();
+		mRefreshHandler = new Handler();				// Create Handler to control start() and stop() .
 	}
 
-	public WaveformView(Context context) {    //???
+	public WaveformView(Context context) {    										/** ?? **/
 		super(context);
 		init();
 	}
 
-	public WaveformView(Context context, AttributeSet attrs) {   // ???
+	public WaveformView(Context context, AttributeSet attrs) {   					/** ?? **/
 		super(context, attrs);
 		init();
 	}
 
 	@Override
 	protected void onDraw(Canvas canvas) {
-		int width = getWidth();
+		int width = getWidth();   			// of the View .
 		int height = getHeight();
 
 		for (int i = 0; i < mDataSets.size(); i++) {
@@ -138,7 +144,7 @@ public class WaveformView extends ImageView {
 			paint.setColor(data.paintColor);
 			paint.setStrokeWidth(data.lineWidth);
 
-			ListIterator<Integer> iter = data.listIterator();    //???
+			ListIterator<Integer> iter = data.listIterator();    					/** ?? **/
 			int y1 = 0;
 			int y2 = 0;
 			if (iter.hasNext())
@@ -150,15 +156,22 @@ public class WaveformView extends ImageView {
 				y1 = y2;
 			}
 			paint.setColor(Color.BLACK);
+			paint.setStrokeWidth(1);
 			canvas.drawLine(0, 0, width, 0, paint);
 		}
 
 	}
-
+	
+	
+	/**
+	*These are commends to control "WaveformView" from other "Class" .
+	*/
+	
+	// Handler.post() Runnable to start() it .
 	public void start() {
 		mRefreshHandler.post(mRefreshRunnable);
 	}
-
+	// Handler removeCallbacks() Runnable to stop() it .
 	public void stop() {
 		mRefreshHandler.removeCallbacks(mRefreshRunnable);
 	}
@@ -177,6 +190,12 @@ public class WaveformView extends ImageView {
 			mDataSets.get(dataSetId).paintColor = color;
 		}
 	}
+	
+	public void setLineWidth(int dataSetId, int lineWidth) {
+		if (dataSetId >= 0 && dataSetId < mDataSets.size()) {
+			mDataSets.get(dataSetId).lineWidth = lineWidth;
+		}
+	}
 
 	public void setCurrentData(int dataSetId, int data) {
 		if (dataSetId >= 0 && dataSetId < mDataSets.size()) {
@@ -185,19 +204,13 @@ public class WaveformView extends ImageView {
 		}
 	}
 	
-	public void setData(int dataSetId, int[] dataArray) {
+	public void setData(int dataSetId, int[] dataArray) {	// set whole array's data
 		if (dataSetId >= 0 && dataSetId < mDataSets.size() && dataArray != null) {
-			DataSet dataSet = mDataSets.get(dataSetId);
+			DataSet dataSet = mDataSets.get(dataSetId);  
 			int size = dataArray.length;
 			for(int i = 0; i < size ; i++){
-				dataSet.pushValue(dataArray[i]);
+				dataSet.pushValue(dataArray[i]);    		// do pushValue to dataSet .
 			}
-		}
-	}
-
-	public void setLineWidth(int dataSetId, int lineWidth) {
-		if (dataSetId >= 0 && dataSetId < mDataSets.size()) {
-			mDataSets.get(dataSetId).lineWidth = lineWidth;
 		}
 	}
 
