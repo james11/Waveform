@@ -14,7 +14,6 @@ import android.util.Log;
 import android.widget.ImageView;
 
 public class WaveformView extends ImageView {
-
 	private static final int DEFAULT_X_SIZE = 50;					// Size of DataSet ArrayList .
 	private static final int DEFAULT_PAINT_COLOR = 0xFFFF0000;
 	private static final int DEFAULT_LINE_WIDTH = 3;
