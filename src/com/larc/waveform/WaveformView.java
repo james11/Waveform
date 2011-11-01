@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Picture;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -18,7 +19,7 @@ public class WaveformView extends ImageView {
 	private static final int DEFAULT_PAINT_COLOR = 0xFFFF0000;
 	private static final int DEFAULT_LINE_WIDTH = 3;
 	private static final int DRAWING_CYCLE = 4;
-
+	
 	private int mUpdatePeriod = 2;									// Screen update frequency , larger --> lager
 	private int mUpdateCounter = 0;
 	
@@ -46,6 +47,7 @@ public class WaveformView extends ImageView {
 		
 	}
 	
+	long mLastUpdateTime;
 	// Run .
 	Runnable mRefreshRunnable = new Runnable() {
 		public void run() {
@@ -61,8 +63,11 @@ public class WaveformView extends ImageView {
 			// Update four WaveformView .
 			mUpdateCounter++;
 			if(mUpdateCounter >= DRAWING_CYCLE){
+				long currentTime = System.currentTimeMillis();
+//				Log.v("TimeStamp", "invalidate: "+ (currentTime - mLastUpdateTime));
 				WaveformView.this.invalidate();
 				mUpdateCounter = 0;
+				mLastUpdateTime = currentTime;
 			}
 			mRefreshHandler.postDelayed(this, mUpdatePeriod);
 		}
@@ -90,7 +95,7 @@ public class WaveformView extends ImageView {
 				for(int i = 0; i < size ; i++){   // for loop to call pushValue() .
 					pushValue(value[i]);
 				}
-				Log.v("Waveform", "size="+value.length);
+//				Log.v("Waveform", "size="+value.length);
 			}
 		}
 
@@ -105,6 +110,18 @@ public class WaveformView extends ImageView {
 			add(value);
 			removeFirst();
 		}
+	}
+	
+	public static Paint createPaint(int color, int width){
+		Paint paint = new Paint();
+		paint.setColor(color);
+		paint.setAntiAlias(true);
+		paint.setDither(true);
+		paint.setStyle(Paint.Style.STROKE);
+		paint.setStrokeJoin(Paint.Join.ROUND);
+		paint.setStrokeCap(Paint.Cap.ROUND);
+		paint.setStrokeWidth(width);
+		return paint;
 	}
 
 	private void init() {
@@ -123,12 +140,25 @@ public class WaveformView extends ImageView {
 		super(context, attrs);
 		init();
 	}
+	
+	
+	
+	@Override
+	protected void onLayout(boolean changed, int left, int top, int right,
+			int bottom) {
+		super.onLayout(changed, left, top, right, bottom);
+	}
 
 	@Override
 	protected void onDraw(Canvas canvas) {
+		drawPicture(canvas);
+	}
+	
+	protected void drawPicture(Canvas canvas) {
+		
 		int width = getWidth();   			// of the View .
 		int height = getHeight();
-
+		
 		for (int i = 0; i < mDataSets.size(); i++) {
 			DataSet data = mDataSets.get(i);
 			int size = data.size();
@@ -143,7 +173,8 @@ public class WaveformView extends ImageView {
 			paint.setColor(data.paintColor);
 			paint.setStrokeWidth(data.lineWidth);
 
-			ListIterator<Integer> iter = data.listIterator();    					/** ?? **/
+			ListIterator<Integer> iter = data.listIterator();
+			/** ?? **/
 			int y1 = 0;
 			int y2 = 0;
 			if (iter.hasNext())

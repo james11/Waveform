@@ -117,14 +117,6 @@ public class BluetoothService {
 		}
 	}
 
-	public Runnable mStopRunnable = new Runnable() {
-		@Override
-		public void run() {
-			BluetoothService.this.stop();
-			Log.v("BluetoothService", "Fail");
-		}
-	};
-
 	/**
 	 * Constructor. Prepares a new BluetoothChat session.
 	 * 

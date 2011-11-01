@@ -51,24 +51,10 @@ public class DataReceiveService extends BluetoothService {
 	protected void onDataRead(int length, byte[] data) {
 		super.onDataRead(length, data);
 		mReceivedData.putData(length, data);
-//		int[] intArray = new int[data.length];
-//		for(int i=0; i< data.length; i++){
-//			intArray[i] = (int) data[i] & 0xFF; 
-//		}
-//		mCurrentValue = intArray[0];
-//		mIntArrayList.add(intArray);
-//		Log.v(TAG, "value="+mCurrentValue);
-		
 	}
 	
 	public int[] getCurrentData(){
-//		int index = mIntArrayList.size() - 1;
-//		if(index >=0){
-//			return mIntArrayList.get(index);
-//		}else {
-//			return new int[0];
-//		}
-		return mReceivedData.getLatestData(500 ,400);
+		return mReceivedData.getLatestData(140 ,1);
 	}
 	
 	private void decodeData(byte[] data, int length){

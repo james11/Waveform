@@ -7,7 +7,6 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -26,10 +25,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.larc.waveform.R;
-import com.larc.waveform.R.id;
-import com.larc.waveform.R.layout;
-import com.larc.waveform.R.menu;
-import com.larc.waveform.R.string;
 
 //import com.larc.bluetoothchat.R;
 

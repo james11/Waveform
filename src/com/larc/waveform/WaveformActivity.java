@@ -51,8 +51,8 @@ public class WaveformActivity extends Activity {
 	private Button mButtonDBS;
 	private TextView mTextView;
 
-	private ReceivedData[] mDbsData = new ReceivedData[WAVEFORM_COUNT];
-	private ReceivedData[] mEegData = new ReceivedData[WAVEFORM_COUNT];
+//	private ReceivedData[] mDbsData = new ReceivedData[WAVEFORM_COUNT];
+//	private ReceivedData[] mEegData = new ReceivedData[WAVEFORM_COUNT];
 
 	private int mSignal = SIGNAL_EEG;
 	private int mSignalCheck = SIGNAL_DBS;
@@ -62,18 +62,18 @@ public class WaveformActivity extends Activity {
 	private BluetoothAdapter mBluetoothAdapter = null;
 	private DataReceiveService mDataReceiveService;
 
-	public BluetoothService mService;
-	private Handler mServiceHandler;
+//	public BluetoothService mService;
+//	private Handler mServiceHandler;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_waveform);
-		for (int i = 0; i < WAVEFORM_COUNT; i++) {
-			mDbsData[i] = new ReceivedData(); // Receive data from
-												// ReceivedData.java .
-			mEegData[i] = new ReceivedData();
-		}
+//		for (int i = 0; i < WAVEFORM_COUNT; i++) {
+//			mDbsData[i] = new ReceivedData(); // Receive data from
+//												// ReceivedData.java .
+//			mEegData[i] = new ReceivedData();
+//		}
 
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -318,9 +318,23 @@ public class WaveformActivity extends Activity {
 
 	private void quit() {
 		finish();
-		closeContextMenu();
-		mServiceHandler.post(mService.mStopRunnable);
+		if (mDataReceiveService != null){
+			mDataReceiveService.stop();
+		}
+		for (int i = 0; i < mWaveformArray.length; i++) {
+			mWaveformArray[i].stop();
+		}
 	};
+	
+	
+
+	@Override
+	public Object onRetainNonConfigurationInstance() {
+		for (int i = 0; i < mWaveformArray.length; i++) {
+			mWaveformArray[i].stop();
+		}
+		return super.onRetainNonConfigurationInstance();
+	}
 
 	private BluetoothService.BluetoothEventHandler mBluetoothHandler = new BluetoothService.BluetoothEventHandler() {
 

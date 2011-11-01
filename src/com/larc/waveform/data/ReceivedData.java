@@ -7,6 +7,9 @@ import android.util.Log;
 
 public class ReceivedData {
 	
+	private static final String TAG = "ReceivedData";
+	private static final boolean VERBOSE = true;
+	
 	private static final int BUFFER_SIZE = 1024*1024*4;
 	private static final byte DEFAULT_VALUE = (byte) 0x80;
 	
@@ -18,6 +21,8 @@ public class ReceivedData {
 	private int mGetPointer = 0;
 
 	public void putData(int length, byte[] data){
+//		if (VERBOSE)
+//			Log.d(TAG, "putData: size = "+length);
 		
 		int currentPosition = 0;
 //		synchronized(mLock){
@@ -45,41 +50,50 @@ public class ReceivedData {
 	}
 	
 	
-	public int[] getLatestData(int size, int sampleFactor){
+	public int[] getLatestData(int preferedSize, int sampleFactor){
 		
-		int[] data;
+		
+		int[] data = null;
 		int start = 0;
 		int end = 0;
+		int avaliableSize = 0;
 //		synchronized(mLock){
 			start = mGetPointer;
 			end = mPointer;
-			end = (end + start)/2;
-			mGetPointer = end;
+			end = (end + start ) / 2;
+			avaliableSize = end - start;
 //		}
+//		if (VERBOSE)
+//			Log.v(TAG, "getLatestData: avaliableSize = " + avaliableSize);
+
 		
-		if(end - start <= 0 || start >= BUFFER_SIZE ){
-			Log.v("Waveform", "null");
+		if(avaliableSize <= 0 || start >= BUFFER_SIZE ){
+			Log.v("Waveform", "no data avaliable");
 			mGetPointer = 0;
 			return null;
+		} else if (preferedSize >= avaliableSize){
+			data = new int[avaliableSize];
+			for (int i=0 ; i< avaliableSize; i++){
+				data[i] = (int) mDataBuffer[start + i] & 0xFF;
+			}
+			mGetPointer = end;
 		} else {
-			int validSize = Math.min(end - start, size);
-			int space = 1;//size / validSize;
-			data = new int[validSize];
-			for (int i=0 ; i< validSize; i++){
+			// availableSize > preferedSize
+			int space = 1;
+			do{
+				space ++;
+			}while (space*preferedSize < avaliableSize);
+			space --;
+			
+			int actualSize = preferedSize;
+			data = new int[actualSize];
+			for (int i=0 ; i< actualSize; i++){
 				data[i] = (int) mDataBuffer[start + i*space] & 0xFF;
 			}
-			
-			return data;
+			mGetPointer = end;
 		}
-//			data = new int[8];
-//			data[0] = (int) mDataBuffer[start] & 0xFF;
-//			data[1] = (int) mDataBuffer[start] & 0xFF;
-//			data[2] = (int) mDataBuffer[start] & 0xFF;
-//			data[3] = (int) mDataBuffer[start] & 0xFF;
-//			data[4] = (int) mDataBuffer[start] & 0xFF;
-//			data[5] = (int) mDataBuffer[start] & 0xFF;
-//			data[6] = (int) mDataBuffer[start] & 0xFF;
-//			data[7] = (int) mDataBuffer[start] & 0xFF;
-//			return data;
+//		if (VERBOSE && data != null)
+//			Log.d(TAG, "getLatestData: size = " + data.length);
+		return data;
 	}
 }
