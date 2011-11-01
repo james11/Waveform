@@ -63,10 +63,10 @@ public class ReceivedData {
 			return null;
 		} else {
 			int validSize = Math.min(end - start, size);
-//			int space = size / validSize;
+			int space = 1;//size / validSize;
 			data = new int[validSize];
 			for (int i=0 ; i< validSize; i++){
-				data[i] = (int) mDataBuffer[start + i] & 0xFF;
+				data[i] = (int) mDataBuffer[start + i*space] & 0xFF;
 			}
 			
 			return data;
