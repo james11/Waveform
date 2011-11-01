@@ -10,7 +10,7 @@ public class ReceivedData {
 	private static final String TAG = "ReceivedData";
 	private static final boolean VERBOSE = true;
 	
-	private static final int BUFFER_SIZE = 1024*1024*4;
+	private static final int BUFFER_SIZE = 1024*100;
 	private static final byte DEFAULT_VALUE = (byte) 0x80;
 	
 	
@@ -32,6 +32,9 @@ public class ReceivedData {
 		if(currentPosition + length <= BUFFER_SIZE ){
 		
 		} else {
+			ReceivedDataSaver.saveData(mDataBuffer, 0, currentPosition);
+			
+			
 			Arrays.fill(mDataBuffer, DEFAULT_VALUE);
 //			synchronized(mLock){
 				mPointer = 0;
