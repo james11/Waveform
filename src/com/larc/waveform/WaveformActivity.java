@@ -101,11 +101,13 @@ public class WaveformActivity extends Activity {
 			mChannelNameArray[i].setGravity(android.view.Gravity.CENTER);
 			mWaveformArray[i] = new WaveformView(this);
 			// add views
-			mChannelNameContainer.addView(mChannelNameArray[i], params);
-			// mWaveformContainer.addView(mWaveformArray[i],params);
+//			mChannelNameContainer.addView(mChannelNameArray[i], params);
+//			mWaveformContainer.addView(mWaveformArray[i],params);
 		}
-
-		mWaveformContainer.addView(mWaveformArray[0], params); // ****
+		
+		mChannelNameArray[0].setText("ECG Channel");						// ****
+		mChannelNameContainer.addView(mChannelNameArray[0], params);		// ****
+		mWaveformContainer.addView(mWaveformArray[0], params); 				// ****
 
 		mWaveformArray[0].setAdapter(mWaveformAdapter); // Link to WaveformView
 														// . Set
