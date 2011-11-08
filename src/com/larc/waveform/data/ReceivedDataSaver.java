@@ -46,8 +46,9 @@ public class ReceivedDataSaver {
 				
 				
 				Date date = new Date();
-				String fileName = generateFileName(date) +"tmd.wtf";
-				File dir = Environment.getExternalStorageDirectory();
+				String fileName = generateFileName(date) +".LaRC.txt";
+				/***  ???  ***/
+				File dir = Environment.getExternalStorageDirectory();				//   ???
 				String dirPath = dir + FILE_PATH;
 				String fullPath = dir.getAbsolutePath()+FILE_PATH+fileName;
 				File dirFile = new File(dirPath);

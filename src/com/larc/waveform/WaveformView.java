@@ -51,7 +51,7 @@ public class WaveformView extends ImageView {
 
 	}
 
-	long mLastUpdateTime;
+	long mLastUpdateTime;  // for the Log which is used to test Update period . (currentTime - mLastUpdateTime)
 	// Run .
 	Runnable mRefreshRunnable = new Runnable() {
 		public void run() {
@@ -66,7 +66,7 @@ public class WaveformView extends ImageView {
 				}
 			}
 
-			// Update four WaveformView .
+			// Update four WaveformViews .
 			mUpdateCounter++;
 			if (mUpdateCounter >= DRAWING_CYCLE) {
 				long currentTime = System.currentTimeMillis();
@@ -82,7 +82,7 @@ public class WaveformView extends ImageView {
 
 	@SuppressWarnings("serial")
 	private static class DataSet extends LinkedList<Integer> {
-		public int upperBound = 450;
+		public int upperBound = 350;
 		public int lowerBound = 0;
 		public int currentValue = 0;
 		private int paintColor = DEFAULT_PAINT_COLOR;
@@ -121,6 +121,7 @@ public class WaveformView extends ImageView {
 		}
 	}
 
+	/**   ?????   ***/
 	public static Paint createPaint(int color, int width) {
 		Paint paint = new Paint();
 		paint.setColor(color);

@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -24,7 +23,7 @@ import com.larc.waveform.data.ReceivedData;
 import com.larc.waveform.service.DataReceiveService;
 
 public class WaveformActivity extends Activity {
-	private static final int DEFAULT_SIZE = 5000*2; // Screen pixels number
+	private static final int DEFAULT_SIZE = 5000 * 2; // Screen pixels number
 	private static final int WAVEFORM_COUNT = 4;
 
 	private static final int COLOR_TEXT_NORMAL = Color.GRAY;
@@ -50,9 +49,10 @@ public class WaveformActivity extends Activity {
 	private Button mButtonEEG;
 	private Button mButtonDBS;
 	private TextView mTextView;
+	
 
-//	private ReceivedData[] mDbsData = new ReceivedData[WAVEFORM_COUNT];
-//	private ReceivedData[] mEegData = new ReceivedData[WAVEFORM_COUNT];
+	// private ReceivedData[] mDbsData = new ReceivedData[WAVEFORM_COUNT];
+	// private ReceivedData[] mEegData = new ReceivedData[WAVEFORM_COUNT];
 
 	private int mSignal = SIGNAL_EEG;
 	private int mSignalCheck = SIGNAL_DBS;
@@ -61,19 +61,22 @@ public class WaveformActivity extends Activity {
 	// Local Bluetooth adapter
 	private BluetoothAdapter mBluetoothAdapter = null;
 	private DataReceiveService mDataReceiveService;
+	private ReceivedData mReceivedData;
+	private BluetoothService mBluetoothService;
+	public long mRate = 0;
 
-//	public BluetoothService mService;
-//	private Handler mServiceHandler;
+	// public BluetoothService mService;
+	// private Handler mServiceHandler;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_waveform);
-//		for (int i = 0; i < WAVEFORM_COUNT; i++) {
-//			mDbsData[i] = new ReceivedData(); // Receive data from
-//												// ReceivedData.java .
-//			mEegData[i] = new ReceivedData();
-//		}
+		// for (int i = 0; i < WAVEFORM_COUNT; i++) {
+		// mDbsData[i] = new ReceivedData(); // Receive data from
+		// // ReceivedData.java .
+		// mEegData[i] = new ReceivedData();
+		// }
 
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -101,13 +104,14 @@ public class WaveformActivity extends Activity {
 			mChannelNameArray[i].setGravity(android.view.Gravity.CENTER);
 			mWaveformArray[i] = new WaveformView(this);
 			// add views
-//			mChannelNameContainer.addView(mChannelNameArray[i], params);
-//			mWaveformContainer.addView(mWaveformArray[i],params);
+			// mChannelNameContainer.addView(mChannelNameArray[i], params);
+			// mWaveformContainer.addView(mWaveformArray[i],params);
 		}
-		
-		mChannelNameArray[0].setText("ECG Channel");						// ****
-		mChannelNameContainer.addView(mChannelNameArray[0], params);		// ****
-		mWaveformContainer.addView(mWaveformArray[0], params); 				// ****
+
+		int Rate = (int) mRate;
+		mChannelNameArray[0].setText("ECG Channel" + Rate); // ****
+		mChannelNameContainer.addView(mChannelNameArray[0], params); // ****
+		mWaveformContainer.addView(mWaveformArray[0], params); // ****
 
 		mWaveformArray[0].setAdapter(mWaveformAdapter); // Link to WaveformView
 														// . Set
@@ -296,13 +300,17 @@ public class WaveformActivity extends Activity {
 		case R.id.secure_connect_scan:
 			// Launch the DeviceListActivity to see devices and do scan
 			serverIntent = new Intent(this, DeviceListActivity.class);
-				// Start Activity "serverIntent"(DeviceListActivity) ,and return to onActivityResult with requestCode "REQUEST_CONNECT_DEVICE_SECURE" .
+			// Start Activity "serverIntent"(DeviceListActivity) ,and return to
+			// onActivityResult with requestCode "REQUEST_CONNECT_DEVICE_SECURE"
+			// .
 			startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
 			return true;
 		case R.id.insecure_connect_scan:
 			// Launch the DeviceListActivity to see devices and do scan
 			serverIntent = new Intent(this, DeviceListActivity.class);
-				// Start Activity "serverIntent"(DeviceListActivity) ,and return to onActivityResult with requestCode "REQUEST_CONNECT_DEVICE_INSECURE" .
+			// Start Activity "serverIntent"(DeviceListActivity) ,and return to
+			// onActivityResult with requestCode
+			// "REQUEST_CONNECT_DEVICE_INSECURE" .
 			startActivityForResult(serverIntent,
 					REQUEST_CONNECT_DEVICE_INSECURE);
 			return true;
@@ -320,15 +328,13 @@ public class WaveformActivity extends Activity {
 
 	private void quit() {
 		finish();
-		if (mDataReceiveService != null){
+		if (mDataReceiveService != null) {
 			mDataReceiveService.stop();
 		}
 		for (int i = 0; i < mWaveformArray.length; i++) {
 			mWaveformArray[i].stop();
 		}
 	};
-	
-	
 
 	@Override
 	public Object onRetainNonConfigurationInstance() {
@@ -372,12 +378,14 @@ public class WaveformActivity extends Activity {
 
 	};
 
+
 	private void ensureDiscoverable() {
 		if (mBluetoothAdapter.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
 			Intent discoverableIntent = new Intent(
 					BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-			// add extended data to the intent .(make bluetooth discoverable for 300 second)
-			discoverableIntent.putExtra(		
+			// add extended data to the intent .(make bluetooth discoverable for
+			// 300 second)
+			discoverableIntent.putExtra(
 					BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
 			startActivity(discoverableIntent);
 		}
@@ -387,7 +395,9 @@ public class WaveformActivity extends Activity {
 		switch (requestCode) {
 		case REQUEST_CONNECT_DEVICE_SECURE:
 			// When DeviceListActivity returns with a device to connect
-			if (resultCode == Activity.RESULT_OK) {				// RESULT_OK is from "mDeviceClickListener" in DeviceListActivity.java
+			if (resultCode == Activity.RESULT_OK) { // RESULT_OK is from
+													// "mDeviceClickListener" in
+													// DeviceListActivity.java
 				String address = data.getExtras().getString(
 						DeviceListActivity.EXTRA_DEVICE_ADDRESS);
 				connectDevice(address, true);
@@ -401,7 +411,8 @@ public class WaveformActivity extends Activity {
 				connectDevice(address, false);
 			}
 			break;
-		case REQUEST_ENABLE_BT:																	/** Not declare here **/
+		case REQUEST_ENABLE_BT:
+			/** Not declare here **/
 			// When we request to enable Bluetooth returns
 			if (resultCode == Activity.RESULT_OK) {
 				// Bluetooth is now enabled, so set up a chat session
@@ -422,12 +433,15 @@ public class WaveformActivity extends Activity {
 		setupConnect();
 		mDataReceiveService.connect(device, secure);
 	}
+
 	// in case there is no DataReceiveService for our Bluetooth connection .
 	private void setupConnect() {
-		// Initialize the DataReceiveService to perform bluetooth connections if no DataReceive source .
+		// Initialize the DataReceiveService to perform bluetooth connections if
+		// no DataReceive source .
 		if (mDataReceiveService == null) {
 			mDataReceiveService = DataReceiveService.getInstance(this);
-			mDataReceiveService.setHandler(mBluetoothHandler);									/** ??? **/
+			mDataReceiveService.setHandler(mBluetoothHandler);
+			/** ??? **/
 			mDataReceiveService.start();
 		}
 

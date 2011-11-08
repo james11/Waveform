@@ -42,20 +42,28 @@ public class DataReceiveService extends BluetoothService {
 	
 
 	private ArrayList<Byte> mByteArray = new ArrayList<Byte>();
-	
 	private ByteArrayBuffer byteBuffer = new ByteArrayBuffer(4);
 	private ReceivedData mReceivedData = new ReceivedData();
 	
 	
+	
+	/****    acturally used block   ****/
+	
 	@Override
+	// @Override "onDataRead()" in "BluetoothService.java" .
 	protected void onDataRead(int length, byte[] data) {
 		super.onDataRead(length, data);
+		// Call "ReceivedData.java" to put received data in to mDataBuffer .
 		mReceivedData.putData(length, data);
 	}
 	
 	public int[] getCurrentData(){
 		return mReceivedData.getLatestData(140 ,1);
 	}
+	
+	/****    acturally used block   ****/
+	
+
 	
 	private void decodeData(byte[] data, int length){
 		int offset = 0;
