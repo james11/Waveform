@@ -19,6 +19,7 @@ public class ReceivedData {
 	private Object mLock = new Object();
 	private int mPointer = 0;
 	private int mGetPointer = 0;
+
 	public int mMaxData = 0;
 	public int mMinData = 0;
 	public int mPeakCnt = 0;
@@ -27,7 +28,7 @@ public class ReceivedData {
 	private boolean mSlopZero = false;
 
 	long mLastqTime = 0;
-	public long mHeartRate;
+	public int mHeartRate;
 	private WaveformActivity mWaveformActivity;
 	private byte[] mLastData = new byte[BUFFER_SIZE];
 
@@ -71,25 +72,30 @@ public class ReceivedData {
 				mIncrease = false;
 			}
 
-			if (mIncrease == mLastIncrease) {
+			if (mIncrease != mLastIncrease) {
 				mSlopZero = true;
-				// mPeakCnt++;
 			} else {
 				mSlopZero = false;
 			}
-			mLastIncrease = mIncrease;
+
 			if (mMaxData >= 180 && mSlopZero == true) {
 				long qTime = System.currentTimeMillis();
-				mHeartRate = 60 * (1 / (qTime - mLastqTime));
-				mWaveformActivity.mRate = mHeartRate;
+				mHeartRate = (int) (60 * (1 / (qTime - mLastqTime)));
+				// mWaveformActivity.mRate = mHeartRate;
 				mLastqTime = qTime;
-				mLastData[i] = data[i];
+				mMaxData = 0;
 			}
+			mLastData[i] = data[i];
+			mLastIncrease = mIncrease;
 		}
 
 		// synchronized(mLock){
 		mPointer += length;
 		// }
+	}
+
+	public int getRate() {
+		return mHeartRate;
 	}
 
 	public int[] getLatestData(int preferedSize, int sampleFactor) {
@@ -133,6 +139,7 @@ public class ReceivedData {
 			for (int i = 0; i < actualSize; i++) {
 				data[i] = (int) mDataBuffer[start + i * space] & 0xFF;
 			}
+
 			mGetPointer = end;
 		}
 		// if (VERBOSE && data != null)

@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -49,7 +50,6 @@ public class WaveformActivity extends Activity {
 	private Button mButtonEEG;
 	private Button mButtonDBS;
 	private TextView mTextView;
-	
 
 	// private ReceivedData[] mDbsData = new ReceivedData[WAVEFORM_COUNT];
 	// private ReceivedData[] mEegData = new ReceivedData[WAVEFORM_COUNT];
@@ -63,7 +63,11 @@ public class WaveformActivity extends Activity {
 	private DataReceiveService mDataReceiveService;
 	private ReceivedData mReceivedData;
 	private BluetoothService mBluetoothService;
-	public long mRate = 0;
+
+	private int mRate = 0;
+	private int mUpdatePeriod = 500;
+	private Handler mRateRefreshHandler;
+	
 
 	// public BluetoothService mService;
 	// private Handler mServiceHandler;
@@ -77,7 +81,7 @@ public class WaveformActivity extends Activity {
 		// // ReceivedData.java .
 		// mEegData[i] = new ReceivedData();
 		// }
-
+		mRateRefreshHandler = new Handler(); 
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
 		mButtonPause = (Button) findViewById(R.id.buttonPause);
@@ -108,10 +112,10 @@ public class WaveformActivity extends Activity {
 			// mWaveformContainer.addView(mWaveformArray[i],params);
 		}
 
-		int Rate = (int) mRate;
-		mChannelNameArray[0].setText("ECG Channel" + Rate); // ****
+		mChannelNameArray[0].setText("ECG Channel" + "\nHeart Rate = "+ mRate + "/min"); // ****
 		mChannelNameContainer.addView(mChannelNameArray[0], params); // ****
 		mWaveformContainer.addView(mWaveformArray[0], params); // ****
+		
 
 		mWaveformArray[0].setAdapter(mWaveformAdapter); // Link to WaveformView
 														// . Set
@@ -155,6 +159,18 @@ public class WaveformActivity extends Activity {
 	protected void onResume() { // ??
 		super.onResume();
 		setupConnect();
+	}
+	
+	Runnable mRateRefreshRunnable = new Runnable() {
+		public void run() {
+			mRate = getRate();
+			mChannelNameArray[0].setText("ECG Channel" + "\nHeart Rate = "+ mRate + "/min"); // ****
+			mRateRefreshHandler.postDelayed(this, mUpdatePeriod);
+			}
+	};
+
+	public int getRate() {
+		return mReceivedData.getRate();
 	}
 
 	// Declare Button.OnClickListener "mButtonClickListener" .
@@ -378,7 +394,6 @@ public class WaveformActivity extends Activity {
 
 	};
 
-
 	private void ensureDiscoverable() {
 		if (mBluetoothAdapter.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
 			Intent discoverableIntent = new Intent(
@@ -431,6 +446,7 @@ public class WaveformActivity extends Activity {
 		BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(macAddress);
 		// Attempt to connect to the device
 		setupConnect();
+		mRateRefreshHandler.post(mRateRefreshRunnable);
 		mDataReceiveService.connect(device, secure);
 	}
 
