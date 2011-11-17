@@ -19,9 +19,10 @@ import android.widget.Toast;
 
 import com.larc.bluetoothconnect.BluetoothService;
 import com.larc.bluetoothconnect.DeviceListActivity;
-import com.larc.waveform.WaveformView.WaveformAdapter;
 import com.larc.waveform.data.ReceivedData;
 import com.larc.waveform.service.DataReceiveService;
+import com.larc.waveform.ui.widget.WaveformView;
+import com.larc.waveform.ui.widget.WaveformView.WaveformAdapter;
 
 public class WaveformActivity extends Activity {
 	private static final int DEFAULT_SIZE = 5000 * 2; // Screen pixels number
