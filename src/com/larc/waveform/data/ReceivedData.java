@@ -49,7 +49,7 @@ public class ReceivedData {
 		} else {
 			ReceivedDataSaver.saveData(mDataBuffer, 0, currentPosition);
 
-			Arrays.fill(mDataBuffer, DEFAULT_VALUE);
+//			Arrays.fill(mDataBuffer, DEFAULT_VALUE);
 			// synchronized(mLock){
 			mPointer = 0;
 			mGetPointer = 0;
@@ -57,46 +57,48 @@ public class ReceivedData {
 			// }
 		}
 
-		Arrays.fill(mLastData, DEFAULT_VALUE);
+		// Arrays.fill(mLastData, DEFAULT_VALUE);
 		// Put received Data into mDataBuffer .
 		for (int i = 0; i < length; i++) {
-			mDataBuffer[currentPosition + i] = data[i];
-
-			if ((data[i] & 0xFF) >= (mLastData[i] & 0xFF)) {
-				mMaxData = (int) data[i] & 0xFF;
-				mIncrease = true;
-			}
-			// if ((data[i] & 0xFF) <= (data[i - 1] & 0xFF)) {
-			else {
-				mMinData = (int) data[i] & 0xFF;
-				mIncrease = false;
-			}
-
-			if (mIncrease != mLastIncrease) {
-				mSlopZero = true;
-			} else {
-				mSlopZero = false;
-			}
-
-			if (mMaxData >= 180 && mSlopZero == true) {
-				long qTime = System.currentTimeMillis();
-				mHeartRate = (int) (60 * (1 / (qTime - mLastqTime)));
-				// mWaveformActivity.mRate = mHeartRate;
-				mLastqTime = qTime;
-				mMaxData = 0;
-			}
-			mLastData[i] = data[i];
-			mLastIncrease = mIncrease;
+			mDataBuffer[i] = data[i];
 		}
+		
 
-		// synchronized(mLock){
-		mPointer += length;
+		// if ((data[i] & 0xFF) >= (mLastData[i] & 0xFF)) {
+		// mMaxData = (int) data[i] & 0xFF;
+		// mIncrease = true;
 		// }
+		// // if ((data[i] & 0xFF) <= (data[i - 1] & 0xFF)) {
+		// else {
+		// mMinData = (int) data[i] & 0xFF;
+		// mIncrease = false;
+		// }
+		//
+		// if (mIncrease != mLastIncrease) {
+		// mSlopZero = true;
+		// } else {
+		// mSlopZero = false;
+		// }
+		//
+		// if (mMaxData >= 180 && mSlopZero == true) {
+		// long qTime = System.currentTimeMillis();
+		// mHeartRate = (int) (60 * (1 / (qTime - mLastqTime)));
+		// // mWaveformActivity.mRate = mHeartRate;
+		// mLastqTime = qTime;
+		// mMaxData = 0;
+		// }
+		// mLastData[i] = data[i];
+		// mLastIncrease = mIncrease;
+		// }
+		//
+		// // synchronized(mLock){
+		// mPointer += length;
+		// // }
 	}
 
-	public int getRate() {
-		return mHeartRate;
-	}
+//	public int getRate() {
+//		return mHeartRate;
+//	}
 
 	public int[] getLatestData(int preferedSize, int sampleFactor) {
 
