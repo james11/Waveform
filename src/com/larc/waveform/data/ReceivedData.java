@@ -57,11 +57,11 @@ public class ReceivedData {
 			// }
 		}
 
-		// Arrays.fill(mLastData, DEFAULT_VALUE);
+		 Arrays.fill(mLastData, DEFAULT_VALUE);
 		// Put received Data into mDataBuffer .
 		for (int i = 0; i < length; i++) {
-			mDataBuffer[i] = data[i];
-		}
+			mDataBuffer[currentPosition + i] = data[i];
+	
 		
 
 		// if ((data[i] & 0xFF) >= (mLastData[i] & 0xFF)) {
@@ -87,12 +87,12 @@ public class ReceivedData {
 		// mLastqTime = qTime;
 		// mMaxData = 0;
 		// }
-		// mLastData[i] = data[i];
+		 mLastData[i] = data[i];
 		// mLastIncrease = mIncrease;
-		// }
+		 }
 		//
 		// // synchronized(mLock){
-		// mPointer += length;
+		 mPointer += length;
 		// // }
 	}
 
