@@ -8,50 +8,55 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Style;
+import android.graphics.Path;
+import android.graphics.Picture;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 /**
- * This class is still being tested.
- * Don't use it.
+ * This class is still being tested. Don't use it.
+ * 
  * @author Jason
- *
+ * 
  */
-public class WaveformView extends SurfaceView implements SurfaceHolder.Callback{
-	private static final int DEFAULT_X_SIZE = 50; // Size of DataSet ArrayList .
+public class WaveformView extends SurfaceView implements SurfaceHolder.Callback {
+	private static final int DEFAULT_X_SIZE = 500; // Size of DataSet ArrayList
+													// .
 	private static final int DEFAULT_PAINT_COLOR = 0xFFFF0000;
 	private static final int DEFAULT_LINE_WIDTH = 3;
-	private static final int DRAWING_CYCLE = 1;
-	private static final int gGRID_SIZE = 10;
-	
-	public static class WaveformAdapter {
-		public int[] getCurrentData(int set) {
-			return null;
-		}
-		
-	}
+	private static final int GRID_SIZE = 10;
+	private static final int GRID_COLOR = 0xFFCCCCCC;
 
-	private int mUpdatePeriod = 2; // Screen update frequency , larger --> lager
-	private int mUpdateCounter = 0;
+	private int mUpdatePeriod = 20;
+
+	private int mUpdateSpeed = 30;
 
 	private RefreshThread mRefreshThread;
-
 	private ArrayList<DataSet> mDataSets;
+	private WaveformAdapter mAdapter;
+//	private InputStream mInputStream;
 
-	private WaveformAdapter mAdapter = new WaveformAdapter();
+	private Picture mGridPicture;
 
-	
+	public static class WaveformAdapter {
+		public int[] getCurrentData(int set, int preferedSize) {
+			return null;
+		}
+
+	}
+
 	public WaveformView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init();
 	}
-	
+
 	public WaveformView(Context context) {
 		super(context);
 		init();
 	}
-	
+
 	/**
 	 * function executed in constructor
 	 */
@@ -62,16 +67,14 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback{
 		getHolder().addCallback(this);
 	}
 
-	
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
-		
 	}
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
-		if (mRefreshThread != null){
+		if (mRefreshThread != null) {
 			mRefreshThread.stopRefresh();
 		}
 		mRefreshThread = new RefreshThread();
@@ -80,75 +83,60 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback{
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		if (mRefreshThread != null){
+		if (mRefreshThread != null) {
 			mRefreshThread.stopRefresh();
 			mRefreshThread = null;
 		}
 	}
 
-	long mLastUpdateTime;  // for the Log which is used to test Update period . (currentTime - mLastUpdateTime)
-	// Run .
-//	private class DataThread extends Thread{
-//		public void run() {
-//			while (true) {
-//				for (int i = 0; i < mDataSets.size(); i++) {
-//					if (mAdapter != null) { // getCurrentData and pushData if there
-//						// has data to adapt .
-//						//				int[] value = mAdapter.getCurrentData(i);
-//						int[] value = new int[50];
-//						for (int j = 0; j < 50; j++) {
-//							value[j] = (int) (System.currentTimeMillis() % 100 - 50);
-//						}
-//						mDataSets.get(i).pushData(value);
-//					} else { // push CurrentData again (two times) if there has no
-//						// data to be adapted .
-//						mDataSets.get(i).push();
-//					}
-//				}
-//				try {
-//					Thread.sleep(mUpdatePeriod);
-//				} catch (InterruptedException e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		}
-//		
-//	}
-	
-	private class RefreshThread extends Thread{
+	private class RefreshThread extends Thread {
+
+		// private Handler mmHandler;
 		private volatile boolean mmIsThreadRunning = true;
 		private volatile boolean mmIsDrawing = true;
-		
-		public void run() {
-			while(mmIsThreadRunning){
-				// Update view
-				long currentTime = System.currentTimeMillis();
-				Canvas canvas = getHolder().lockCanvas();
-				canvas.drawColor(Color.WHITE);
-				drawPicture(canvas);
-				getHolder().unlockCanvasAndPost(canvas);
-				
-				mLastUpdateTime = currentTime;
 
-				//Request data and push into dataSet
-				mUpdateCounter++;
-				if (mUpdateCounter >= DRAWING_CYCLE && mmIsDrawing) {
+		private long mmLastUpdateTime = System.currentTimeMillis();
+
+		public RefreshThread() {
+			super("WaveformThread");
+		}
+
+		@Override
+		public void start() {
+			super.start();
+		}
+
+		public void run() {
+			int width, height;
+			while (mmIsThreadRunning) {
+				
+				width = getWidth();
+				height = getHeight();
+				
+				// Update view
+				if (mmIsDrawing) {
 					for (int i = 0; i < mDataSets.size(); i++) {
-						if (mAdapter != null) { // getCurrentData and pushData if there
-							// has data to adapt .
-						int[] value = mAdapter.getCurrentData(i);
-//							int[] value = new int[3];
-//							for(int j=0; j<3; j++){
-//								value[j] = (int) (System.currentTimeMillis() %100 -50);
-//							}
-							mDataSets.get(i).pushData(value);
-						} else { // push CurrentData again (two times) if there has no
-							// data to be adapted .
-							mDataSets.get(i).push();
-						}
+						DataSet data = mDataSets.get(i);
+						data.initPath(width, height);
 					}
-					mUpdateCounter = 0;
+					Canvas canvas = getHolder().lockCanvas();
+					canvas.drawColor(Color.WHITE);
+					drawCanvas(canvas);
+					getHolder().unlockCanvasAndPost(canvas);
 				}
+
+				// Request data and push into dataSet
+				long currentTime = System.currentTimeMillis();
+				if (mAdapter != null) {
+					float intputCount = 
+							((float)(currentTime - mmLastUpdateTime)) / (float)mUpdatePeriod;
+					for (int i = 0; i < mDataSets.size(); i++) {
+						int[] value = mAdapter.getCurrentData(i,
+								(int) (intputCount * mUpdateSpeed));
+						mDataSets.get(i).pushData(value);
+					}
+				}
+				mmLastUpdateTime = currentTime;
 				try {
 					Thread.sleep(mUpdatePeriod);
 				} catch (InterruptedException e) {
@@ -156,8 +144,8 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback{
 				}
 			}
 		}
-		
-		public void stopRefresh(){
+
+		public void stopRefresh() {
 			this.mmIsThreadRunning = false;
 		}
 
@@ -172,11 +160,43 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback{
 
 	@SuppressWarnings("serial")
 	private static class DataSet extends LinkedList<Integer> {
-		public int upperBound = 800;
-		public int lowerBound = 200;
-		public int currentValue = 0;
+		public int upperBound = 600;
+		public int lowerBound = 0;
+		// public int currentValue = 0;
 		private int paintColor = DEFAULT_PAINT_COLOR;
 		private int lineWidth = DEFAULT_LINE_WIDTH;
+
+		private Path mmPath;
+
+		public Path getPath() {
+			return mmPath;
+		}
+
+		public void initPath(int width, int height) {
+			mmPath = new Path();
+			int size = size();
+			if (size <= 0)
+				size = 1;
+			int range = upperBound - lowerBound;
+			float deltaX = (float) width / (float) size;
+			float deltaY = (float) height / (float) range;
+			float base = height / 2;
+
+			Paint paint = new Paint();
+			paint.setColor(paintColor);
+			paint.setStrokeWidth(lineWidth);
+
+			ListIterator<Integer> iter = listIterator();
+
+			int y = 0;
+			if (iter.hasNext())
+				y = iter.next();
+			mmPath.moveTo(0, base - y * deltaY);
+			for (int j = 1; iter.hasNext(); j++) {
+				y = iter.next();
+				mmPath.lineTo(j * deltaX, base - y * deltaY);
+			}
+		}
 
 		// fill the ArrayList with "0" at first .
 		public DataSet(int size) {
@@ -190,105 +210,90 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback{
 		public void pushData(int[] value) {
 			if (value != null) {
 				int size = value.length;
-				for (int i = 0; i < size; i++) { // for loop to call pushValue()
-													// .
-					pushValue(value[i]);
+				for (int i = 0; i < size; i++) {
+					push(value[i]);
 				}
-				// Log.v("Waveform", "size="+value.length);
 			}
 		}
 
-		// call pushValue() with "currentValue" one more time .
-		public void push() {
-			pushValue(currentValue);
-		}
+		// public void push() {
+		// push(currentValue);
+		// }
 
-		// remove first value , add current value to LSB and shift whole array .
-		public void pushValue(int value) {
-			currentValue = value;
-			add(value);
+		public void push(int value) {
+			// currentValue = value;
+			addLast(value);
 			removeFirst();
 		}
 	}
 
-	public static Paint createPaint(int color, int width) {
-		Paint paint = new Paint();
-		paint.setColor(color);
-		paint.setAntiAlias(true);
-		paint.setDither(true);
-		paint.setStyle(Paint.Style.STROKE);
-		paint.setStrokeJoin(Paint.Join.ROUND);
-		paint.setStrokeCap(Paint.Cap.ROUND);
-		paint.setStrokeWidth(width);
-		return paint;
-	}
-
-//	@Override
-//	protected void onLayout(boolean changed, int left, int top, int right,
-//			int bottom) {
-//		super.onLayout(changed, left, top, right, bottom);
-//	}
-
-	protected void drawPicture(Canvas canvas) {
-
+	@Override
+	protected void onLayout(boolean changed, int left, int top, int right,
+			int bottom) {
+		super.onLayout(changed, left, top, right, bottom);
 		int width = getWidth(); // of the View .
 		int height = getHeight();
+		mGridPicture = getGridPicture(width, height);
 
+	}
+
+	private static Picture getGridPicture(int width, int height) {
+		Picture picture = new Picture();
+		Canvas canvas = picture.beginRecording(width, height);
+		// draw background grid line
+		Paint paint = new Paint();
+		paint.setColor(GRID_COLOR);
+		paint.setStyle(Style.STROKE);
+
+		int largeGridSize = GRID_SIZE * 5;
+		// vertical
+		for (int left = 0; left < width; left += GRID_SIZE) {
+			if (left % largeGridSize == 0) {
+				paint.setStrokeWidth(2);
+			} else {
+				paint.setStrokeWidth(1);
+			}
+			canvas.drawLine(left, 0, left, height, paint);
+		}
+		// horizontal
+		for (int top = 0; top < height; top += GRID_SIZE) {
+			if (top % largeGridSize == 0) {
+				paint.setStrokeWidth(2);
+			} else {
+				paint.setStrokeWidth(1);
+			}
+			canvas.drawLine(0, top, width, top, paint);
+		}
+		//draw border
+		paint.setColor(Color.BLACK);
+		paint.setStrokeWidth(2);
+		canvas.drawRect(0, 0, width, height, paint);
+		picture.endRecording();
+		return picture;
+	}
+
+	protected void drawCanvas(Canvas canvas) {
+		if (mGridPicture != null){
+			mGridPicture.draw(canvas);
+		}
+		Paint paint = new Paint();
+		paint.setStyle(Style.STROKE);
 		for (int i = 0; i < mDataSets.size(); i++) {
 			DataSet data = mDataSets.get(i);
-			int size = data.size();
-			if (size <= 0)
-				size = 1;
-			int range = data.upperBound - data.lowerBound;
-			float deltaX = (float) width / (float) size;
-			float deltaY = (float) height / (float) range;
-			float base = (data.upperBound + data.lowerBound) / 2;
-
-			Paint paint = new Paint();
 			paint.setColor(data.paintColor);
 			paint.setStrokeWidth(data.lineWidth);
-
-			ListIterator<Integer> iter = data.listIterator();
-			
-			int y1 = 0;
-			int y2 = 0;
-			if (iter.hasNext())
-				y1 = iter.next();
-			for (int j = 1; j < size; j++) {
-				y2 = iter.next();
-				canvas.drawLine((j - 1) * deltaX, base - y1 * deltaY, j
-						* deltaX, base - y2 * deltaY, paint);
-				y1 = y2;
-			}
-			paint.setColor(Color.GRAY);
-			
-			//draw background grid line
-			for (int xgrid = 0; xgrid < width; xgrid++) {
-				if (xgrid % 5 == 0) {
-					paint.setStrokeWidth(2);
-				}
-				canvas.drawLine(xgrid * gGRID_SIZE, 0, xgrid * gGRID_SIZE, height, paint);
-				paint.setStrokeWidth(1);
-			}
-			for (int ygrid = 0; ygrid < width; ygrid++) {
-				if (ygrid % 5 == 0) {
-					paint.setStrokeWidth(2);
-				}
-				canvas.drawLine(0, ygrid * gGRID_SIZE, width, ygrid * gGRID_SIZE, paint);
-				paint.setStrokeWidth(1);
-			}
+			canvas.drawPath(data.getPath(), paint);
 		}
-
 	}
 
 	public void start() {
-		if (mRefreshThread != null){
+		if (mRefreshThread != null) {
 			mRefreshThread.startDrawing();
 		}
 	}
 
 	public void stop() {
-		if (mRefreshThread != null){
+		if (mRefreshThread != null) {
 			mRefreshThread.stopDrawing();
 		}
 	}
@@ -314,23 +319,22 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback{
 		}
 	}
 
-	public void setCurrentData(int dataSetId, int data) {
-		if (dataSetId >= 0 && dataSetId < mDataSets.size()) {
-			mDataSets.get(dataSetId).currentValue = data;
-			invalidate();
-		}
-	}
-
-	public void setData(int dataSetId, int[] dataArray) { // set whole array's
-															// data
-		if (dataSetId >= 0 && dataSetId < mDataSets.size() && dataArray != null) {
+	 public void pushData(int dataSetId, int data) {
+		 if (dataSetId >= 0 && dataSetId < mDataSets.size()) {
+		 mDataSets.get(dataSetId).push(data);
+		 invalidate();
+		 }
+	 }
+	
+	 public void pushData(int dataSetId, int[] dataArray) {
+		 if (dataSetId >= 0 && dataSetId < mDataSets.size() && dataArray != null) {
 			DataSet dataSet = mDataSets.get(dataSetId);
 			int size = dataArray.length;
 			for (int i = 0; i < size; i++) {
-				dataSet.pushValue(dataArray[i]); // do pushValue to dataSet .
+				dataSet.push(dataArray[i]);
 			}
-		}
-	}
+		 }
+	 }
 
 	public void removeDataSet(int dataSetId) {
 		if (dataSetId >= 0 && dataSetId < mDataSets.size()) {
@@ -341,10 +345,9 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback{
 	public void removeAllDataSet() {
 		mDataSets.clear();
 	}
-	
+
 	public void setAdapter(WaveformAdapter adapter) {
 		mAdapter = adapter;
 	}
 
-	
 }

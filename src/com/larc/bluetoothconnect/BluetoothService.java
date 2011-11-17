@@ -16,6 +16,8 @@ package com.larc.bluetoothconnect;
  * limitations under the License.
  */
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -546,9 +548,9 @@ public class BluetoothService {
 			} catch (IOException e) {
 				Log.e(TAG, "temp sockets not created", e);
 			}
-
-			mmInStream = tmpIn;
-			mmOutStream = tmpOut;
+			
+			mmInStream = new BufferedInputStream(tmpIn);
+			mmOutStream = new BufferedOutputStream(tmpOut);
 		}
 
 		public void run() {
