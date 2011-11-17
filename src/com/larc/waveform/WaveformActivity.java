@@ -25,7 +25,7 @@ import com.larc.waveform.ui.widget.WaveformView;
 import com.larc.waveform.ui.widget.WaveformView.WaveformAdapter;
 
 public class WaveformActivity extends Activity {
-	private static final int DEFAULT_SIZE = 5000 * 2; // Screen pixels number
+	private static final int DEFAULT_SIZE = 5000; // Screen pixels number
 	private static final int WAVEFORM_COUNT = 4;
 
 	private static final int COLOR_TEXT_NORMAL = Color.GRAY;

@@ -22,7 +22,7 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback{
 	private static final int DEFAULT_X_SIZE = 50; // Size of DataSet ArrayList .
 	private static final int DEFAULT_PAINT_COLOR = 0xFFFF0000;
 	private static final int DEFAULT_LINE_WIDTH = 3;
-	private static final int DRAWING_CYCLE = 4;
+	private static final int DRAWING_CYCLE = 1;
 	private static final int gGRID_SIZE = 10;
 	
 	public static class WaveformAdapter {
@@ -59,6 +59,7 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback{
 		mDataSets = new ArrayList<DataSet>();
 		DataSet set = new DataSet(DEFAULT_X_SIZE);
 		mDataSets.add(set);
+		getHolder().addCallback(this);
 	}
 
 	
@@ -74,6 +75,7 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback{
 			mRefreshThread.stopRefresh();
 		}
 		mRefreshThread = new RefreshThread();
+		mRefreshThread.start();
 	}
 
 	@Override
@@ -86,34 +88,66 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback{
 
 	long mLastUpdateTime;  // for the Log which is used to test Update period . (currentTime - mLastUpdateTime)
 	// Run .
+//	private class DataThread extends Thread{
+//		public void run() {
+//			while (true) {
+//				for (int i = 0; i < mDataSets.size(); i++) {
+//					if (mAdapter != null) { // getCurrentData and pushData if there
+//						// has data to adapt .
+//						//				int[] value = mAdapter.getCurrentData(i);
+//						int[] value = new int[50];
+//						for (int j = 0; j < 50; j++) {
+//							value[j] = (int) (System.currentTimeMillis() % 100 - 50);
+//						}
+//						mDataSets.get(i).pushData(value);
+//					} else { // push CurrentData again (two times) if there has no
+//						// data to be adapted .
+//						mDataSets.get(i).push();
+//					}
+//				}
+//				try {
+//					Thread.sleep(mUpdatePeriod);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		}
+//		
+//	}
+	
 	private class RefreshThread extends Thread{
 		private volatile boolean mmIsThreadRunning = true;
 		private volatile boolean mmIsDrawing = true;
 		
 		public void run() {
 			while(mmIsThreadRunning){
-				//Request data and push into dataSet
-				for (int i = 0; i < mDataSets.size(); i++) {
-					if (mAdapter != null) { // getCurrentData and pushData if there
-											// has data to adapt .
-						int[] value = mAdapter.getCurrentData(i);
-						mDataSets.get(i).pushData(value);
-					} else { // push CurrentData again (two times) if there has no
-								// data to be adapted .
-						mDataSets.get(i).push();
-					}
-				}
-
 				// Update view
+				long currentTime = System.currentTimeMillis();
+				Canvas canvas = getHolder().lockCanvas();
+				canvas.drawColor(Color.WHITE);
+				drawPicture(canvas);
+				getHolder().unlockCanvasAndPost(canvas);
+				
+				mLastUpdateTime = currentTime;
+
+				//Request data and push into dataSet
 				mUpdateCounter++;
 				if (mUpdateCounter >= DRAWING_CYCLE && mmIsDrawing) {
-					long currentTime = System.currentTimeMillis();
-					Canvas canvas = getHolder().lockCanvas();
-					drawPicture(canvas);
-					getHolder().unlockCanvasAndPost(canvas);
-					
+					for (int i = 0; i < mDataSets.size(); i++) {
+						if (mAdapter != null) { // getCurrentData and pushData if there
+							// has data to adapt .
+						int[] value = mAdapter.getCurrentData(i);
+//							int[] value = new int[3];
+//							for(int j=0; j<3; j++){
+//								value[j] = (int) (System.currentTimeMillis() %100 -50);
+//							}
+							mDataSets.get(i).pushData(value);
+						} else { // push CurrentData again (two times) if there has no
+							// data to be adapted .
+							mDataSets.get(i).push();
+						}
+					}
 					mUpdateCounter = 0;
-					mLastUpdateTime = currentTime;
 				}
 				try {
 					Thread.sleep(mUpdatePeriod);
@@ -138,8 +172,8 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback{
 
 	@SuppressWarnings("serial")
 	private static class DataSet extends LinkedList<Integer> {
-		public int upperBound = 350;
-		public int lowerBound = 0;
+		public int upperBound = 800;
+		public int lowerBound = 200;
 		public int currentValue = 0;
 		private int paintColor = DEFAULT_PAINT_COLOR;
 		private int lineWidth = DEFAULT_LINE_WIDTH;
