@@ -123,7 +123,7 @@ public class ReceivedData {
 			data = new int[avaliableSize];
 			// Convert Data form byte to integer .
 			for (int i = 0; i < avaliableSize; i++) {
-				data[i] = (int) mDataBuffer[start + i] & 0xFF;
+				data[i] = (int) mDataBuffer[start + i] & 0xFF *2;
 			}
 			mGetPointer = end;
 		} else {
@@ -139,7 +139,7 @@ public class ReceivedData {
 			int actualSize = preferedSize;
 			data = new int[actualSize];
 			for (int i = 0; i < actualSize; i++) {
-				data[i] = (int) mDataBuffer[start + i * space] & 0xFF;
+				data[i] = (int) mDataBuffer[start + i * space] & 0xFF *2;
 			}
 
 			mGetPointer = end;
