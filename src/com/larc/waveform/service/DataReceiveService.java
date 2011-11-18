@@ -61,6 +61,10 @@ public class DataReceiveService extends BluetoothService {
 	 * 
 	 * @return
 	 */
+	public int getHeartRate(){
+		return mReceivedData.getRate();
+	}
+	
 	public int[] getCurrentData(int channel, int preferedSize){
 		Log.v(TAG, "getCurrentData "+preferedSize);
 //		int[] data = new int[preferedSize];

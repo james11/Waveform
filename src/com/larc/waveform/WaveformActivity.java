@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -32,17 +33,17 @@ public class WaveformActivity extends Activity implements
 
 	private static final int SIGNAL_EEG = DataReceiveService.CHANNEL_EEG;
 	private static final int SIGNAL_DBS = DataReceiveService.CHANNEL_DBS;
-	
+
 	// Codes for activity result
 	private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
 	private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
 	private static final int REQUEST_ENABLE_BT = 3;
-	
+
 	private static final String TITLE_EEG = "4-Channel EEG Signals";
 	private static final String TITLE_DBS = "4-Channel DBS Signals";
-	
-	private static final int[] LINE_COLOR_ARRAY = 
-		{Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW};
+
+	private static final int[] LINE_COLOR_ARRAY = { Color.RED, Color.BLUE,
+			Color.GREEN, Color.YELLOW };
 
 	/** Called when the activity is first created. */
 
@@ -60,6 +61,10 @@ public class WaveformActivity extends Activity implements
 	private int mSignal = SIGNAL_EEG;
 	private boolean mIsPlaying = true;
 
+	private int mRateUpdatePeriod = 50;
+	private int mRate = 0;
+	private Handler mRateRefreshHandler;
+
 	private BluetoothAdapter mBluetoothAdapter = null;
 	private DataReceiveService mDataReceiveService;
 
@@ -75,8 +80,8 @@ public class WaveformActivity extends Activity implements
 
 	// Setup views and widgets at the first time the activity is created
 	// This should only be called in onCreate();
-	private void initView(){
-		//initialize view variables
+	private void initView() {
+		// initialize view variables
 		mButtonPause = (Button) findViewById(R.id.buttonPause);
 		mButtonEEG = (Button) findViewById(R.id.buttonEEG);
 		mButtonDBS = (Button) findViewById(R.id.buttonDBS);
@@ -86,34 +91,53 @@ public class WaveformActivity extends Activity implements
 
 		mTextView.setText("4-Channel DBS Signals");
 		mTextView.setTextColor(COLOR_TEXT_NORMAL);
-		
+
 		mButtonDBS.setTextColor(COLOR_TEXT_NORMAL);
 		mButtonEEG.setTextColor(COLOR_TEXT_NORMAL);
+		mButtonPause.setTextColor(COLOR_TEXT_NORMAL);
 
 		// one button listener used by two buttons
 		mButtonEEG.setOnClickListener(this);
 		mButtonDBS.setOnClickListener(this);
 		mButtonPause.setOnClickListener(this);
 		
-		//create reusable layout parameter for adding view
+		mRateRefreshHandler = new Handler();
+		mRateRefreshHandler.post(mRateRefreshRunnable);
+
+		// create reusable layout parameter for adding view
 		LinearLayout.LayoutParams params = new LayoutParams(
 				LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, 1f);
-		
-		//create & add waveform view dynamically
+
+		// create & add waveform view dynamically
 		for (int i = 0; i < WAVEFORM_COUNT; i++) {
 			mTextChannelNameArray[i] = new TextView(this);
-			mTextChannelNameArray[i].setText("CH" + (i + 1));
+			mTextChannelNameArray[i].setText("ECG Channel");// + (i + 1));
 			mTextChannelNameArray[i].setTextSize(20);
 			mTextChannelNameArray[i].setTextColor(0xffff9900);
 			mTextChannelNameArray[i].setGravity(android.view.Gravity.CENTER);
-			
+
 			mWaveformArray[i] = new WaveformView(this);
-			
+
 			mChannelNameContainer.addView(mTextChannelNameArray[i], params);
-			mWaveformContainer.addView(mWaveformArray[i],params);
-//			mWaveformArray[i].setAdapter(null);
+			mWaveformContainer.addView(mWaveformArray[i], params);
+			mWaveformArray[i].setAdapter(mWaveformAdapter);
 		}
 
+	}
+
+	Runnable mRateRefreshRunnable = new Runnable() {
+		public void run() {
+			mRate = getRate();
+			for (int i = 0; i < WAVEFORM_COUNT; i++) {
+				mTextChannelNameArray[i].setText("ECG Channel"
+						+ "\nHeart Rate = " + mRate + " /min");
+			}
+			mRateRefreshHandler.postDelayed(this, mRateUpdatePeriod);
+		}
+	};
+
+	public int getRate() {
+		return mDataReceiveService.getHeartRate();
 	}
 
 	@Override
@@ -121,14 +145,14 @@ public class WaveformActivity extends Activity implements
 		super.onResume();
 		setupConnect();
 	}
-	
+
 	@Override
 	protected void onPause() {
 		super.onPause();
 	}
-	
+
 	@Override
-	public void onStop(){
+	public void onStop() {
 		super.onStop();
 		if (mDataReceiveService != null) {
 			mDataReceiveService.stop();
@@ -164,8 +188,8 @@ public class WaveformActivity extends Activity implements
 		}
 
 	}
-	
-	public void setCurrentSignal(int signal){
+
+	public void setCurrentSignal(int signal) {
 		mSignal = signal;
 		refreshSignalButtonAndText();
 	}
@@ -184,7 +208,7 @@ public class WaveformActivity extends Activity implements
 			break;
 		}
 	}
-	
+
 	public void pauseAndStartDrawing() {
 		if (mIsPlaying) {
 			stopDrawing();
@@ -192,39 +216,40 @@ public class WaveformActivity extends Activity implements
 			startDrawing();
 		}
 	}
-	
-	public void startDrawing(){
+
+	public void startDrawing() {
 		mIsPlaying = true;
 		for (WaveformView wave : mWaveformArray) {
 			wave.start();
 		}
 		onStateChanged();
 	}
-	
-	public void stopDrawing(){
+
+	public void stopDrawing() {
 		mIsPlaying = false;
 		for (WaveformView wave : mWaveformArray) {
 			wave.stop();
 		}
 		onStateChanged();
 	}
-	
-	protected void onStateChanged(){
-		if (mIsPlaying){
+
+	protected void onStateChanged() {
+		if (mIsPlaying) {
 			mButtonPause.setTextColor(COLOR_TEXT_SELECTED);
 		} else {
 			mButtonPause.setTextColor(COLOR_TEXT_NORMAL);
 		}
 	}
-	public void setSignal(int signal){
+
+	public void setSignal(int signal) {
 
 		mSignal = signal;
 		resetWaveformViewData();
 		refreshSignalButtonAndText();
 	}
-	
+
 	public void resetWaveformViewData() {
-		for (int i=0; i< mWaveformArray.length; i++) {
+		for (int i = 0; i < mWaveformArray.length; i++) {
 			mWaveformArray[i].removeAllDataSet();
 			mWaveformArray[i].createNewDataSet(DEFAULT_SIZE);
 			mWaveformArray[i].setLineColor(0, LINE_COLOR_ARRAY[i]);
@@ -234,7 +259,7 @@ public class WaveformActivity extends Activity implements
 	private WaveformAdapter mWaveformAdapter = new WaveformAdapter() {
 		@Override
 		public int[] getCurrentData(int set, int preferedSize) {
-			return mDataReceiveService.getCurrentData(mSignal,preferedSize);
+			return mDataReceiveService.getCurrentData(mSignal, preferedSize);
 		}
 	};
 
@@ -308,7 +333,7 @@ public class WaveformActivity extends Activity implements
 		if (mBluetoothAdapter.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
 			Intent discoverableIntent = new Intent(
 					BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-			//make the Bluetooth device discoverable for 300 second
+			// make the Bluetooth device discoverable for 300 second
 			discoverableIntent.putExtra(
 					BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
 			startActivity(discoverableIntent);
