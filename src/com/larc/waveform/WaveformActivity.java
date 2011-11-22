@@ -1,12 +1,17 @@
 package com.larc.waveform;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.telephony.TelephonyManager;
+import android.telephony.gsm.SmsManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -61,9 +66,18 @@ public class WaveformActivity extends Activity implements
 	private int mSignal = SIGNAL_EEG;
 	private boolean mIsPlaying = true;
 
-	private int mRateUpdatePeriod = 50;
-	private int mRate = 0;
+	private int mRateUpdatePeriod = 10000;
+	private int mRate = 110;
+	private int mLast20SecRate = 0;
+	private int mLast10SecRate = 120;
 	private Handler mRateRefreshHandler;
+
+	private String EMERGENCYC_CONNECTION_PHONE_NUMBER = "0918183964";
+	private String SELF_PHONE_NUMBER;
+	private String SMS_MESSEGE_CONTENT = "Emergency Event";
+	private boolean mEmergency = false;
+	private boolean mConnectionCheck = false;
+	private boolean mSMSSended = false;
 
 	private BluetoothAdapter mBluetoothAdapter = null;
 	private DataReceiveService mDataReceiveService;
@@ -75,6 +89,7 @@ public class WaveformActivity extends Activity implements
 		initView();
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		setSignal(SIGNAL_EEG);
+		setPhoneNumber();
 		startDrawing();
 	}
 
@@ -100,7 +115,7 @@ public class WaveformActivity extends Activity implements
 		mButtonEEG.setOnClickListener(this);
 		mButtonDBS.setOnClickListener(this);
 		mButtonPause.setOnClickListener(this);
-		
+
 		mRateRefreshHandler = new Handler();
 		mRateRefreshHandler.post(mRateRefreshRunnable);
 
@@ -127,10 +142,14 @@ public class WaveformActivity extends Activity implements
 
 	Runnable mRateRefreshRunnable = new Runnable() {
 		public void run() {
+			energencyEventCheck();
+			mLast20SecRate = mLast10SecRate;
+			mLast10SecRate = mRate;
 			mRate = getRate();
+			int Rate = (2 * mRate + 3 * mLast10SecRate + 4 * mLast20SecRate) / 9;
 			for (int i = 0; i < WAVEFORM_COUNT; i++) {
 				mTextChannelNameArray[i].setText("ECG Channel"
-						+ "\nHeart Rate = " + mRate + " /min");
+						+ "\nHeart Rate = " + Rate + " /min");
 			}
 			mRateRefreshHandler.postDelayed(this, mRateUpdatePeriod);
 		}
@@ -199,11 +218,13 @@ public class WaveformActivity extends Activity implements
 		case SIGNAL_DBS:
 			mButtonDBS.setTextColor(COLOR_TEXT_SELECTED);
 			mButtonEEG.setTextColor(COLOR_TEXT_NORMAL);
+			mButtonPause.setTextColor(COLOR_TEXT_NORMAL);
 			mTextView.setText(TITLE_DBS);
 			break;
 		case SIGNAL_EEG:
 			mButtonEEG.setTextColor(COLOR_TEXT_SELECTED);
 			mButtonDBS.setTextColor(COLOR_TEXT_NORMAL);
+			mButtonPause.setTextColor(COLOR_TEXT_NORMAL);
 			mTextView.setText(TITLE_EEG);
 			break;
 		}
@@ -235,9 +256,9 @@ public class WaveformActivity extends Activity implements
 
 	protected void onStateChanged() {
 		if (mIsPlaying) {
-			mButtonPause.setTextColor(COLOR_TEXT_SELECTED);
-		} else {
 			mButtonPause.setTextColor(COLOR_TEXT_NORMAL);
+		} else {
+			mButtonPause.setTextColor(COLOR_TEXT_SELECTED);
 		}
 	}
 
@@ -311,6 +332,7 @@ public class WaveformActivity extends Activity implements
 			switch (state) {
 			case BluetoothService.STATE_CONNECTED:
 				text = "connected";
+				mConnectionCheck = true;
 				break;
 			case BluetoothService.STATE_CONNECTING:
 				text = "connecting";
@@ -350,6 +372,8 @@ public class WaveformActivity extends Activity implements
 				String address = data.getExtras().getString(
 						DeviceListActivity.EXTRA_DEVICE_ADDRESS);
 				connectDevice(address, true);
+				mButtonPause.setTextColor(COLOR_TEXT_NORMAL);
+				mIsPlaying = true;
 			}
 			break;
 		case REQUEST_CONNECT_DEVICE_INSECURE:
@@ -358,6 +382,9 @@ public class WaveformActivity extends Activity implements
 				String address = data.getExtras().getString(
 						DeviceListActivity.EXTRA_DEVICE_ADDRESS);
 				connectDevice(address, false);
+				mButtonPause.setTextColor(COLOR_TEXT_NORMAL);
+				mIsPlaying = true;
+
 			}
 			break;
 		case REQUEST_ENABLE_BT:
@@ -393,4 +420,32 @@ public class WaveformActivity extends Activity implements
 
 	}
 
+	private void energencyEventCheck() {
+		mEmergency = mDataReceiveService.emergencyEventCheck();
+		if (mEmergency == true && mConnectionCheck == true
+				&& mSMSSended == false) {
+			emergencyCall();
+		} else {
+
+		}
+	}
+
+	private void setPhoneNumber() {
+		TelephonyManager phoneManager = (TelephonyManager) getApplicationContext()
+				.getSystemService(Context.TELEPHONY_SERVICE);
+		SELF_PHONE_NUMBER = phoneManager.getLine1Number();
+	}
+
+	@SuppressWarnings("deprecation")
+	private void emergencyCall() {
+		SmsManager smsManager = SmsManager.getDefault();
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(
+				WaveformActivity.this, 0, new Intent(), 0);
+		smsManager.sendTextMessage(EMERGENCYC_CONNECTION_PHONE_NUMBER, null,
+				SMS_MESSEGE_CONTENT + " from " + SELF_PHONE_NUMBER,
+				pendingIntent, null);
+		Log.v("Waveform", "Emergency  ");
+		mSMSSended = true;
+
+	}
 }

@@ -1,10 +1,8 @@
 package com.larc.waveform.data;
 
-import java.util.Arrays;
-
-import com.larc.waveform.WaveformActivity;
-
 import android.util.Log;
+
+import com.larc.waveform.service.DataReceiveService;
 
 public class ReceivedData {
 
@@ -27,12 +25,27 @@ public class ReceivedData {
 	private boolean mLastIncrease = true;
 	private boolean mSlopZero = false;
 
-	long mLastqTime = 0;
+	private long mCountIntervalStart = 0;
+
+	// private long mLastqTime = 0;
+	private int mRateCount = 0;
 	public int mHeartRate;
-	private WaveformActivity mWaveformActivity;
+	private DataReceiveService mDataReceiveService;
+	
+	public boolean mEmergencyEvent = false;
+
+	// private int mdeltaData = 0;
+	// private WaveformActivity mWaveformActivity;
 	private byte mLastData = 0;
 
-	public void putData(int length, byte[] data) {
+	// private Handler mCountRateHandler = new Handler();
+	// mCountRateHandler = new Handler();
+
+	public void putData(int length, byte[] data, long CountIntervalStart) {
+		// mRateCount = 0;
+		// long mDataPutTime = System.currentTimeMillis();
+		mCountIntervalStart = CountIntervalStart;
+
 		// if (VERBOSE)
 		// Log.d(TAG, "putData: size = "+length);
 
@@ -57,11 +70,13 @@ public class ReceivedData {
 			// }
 		}
 
-		// Arrays.fill(mLastData, DEFAULT_VALUE);
+		long CheckTimeStart = 0;
 		// Put received Data into mDataBuffer .
 		for (int i = 0; i < length; i++) {
 			mDataBuffer[currentPosition + i] = data[i];
 			mLastIncrease = mIncrease;
+			int high = 600;
+			int low = 100;
 
 			if ((data[i] & 0xFF) >= (mLastData & 0xFF)) {
 				mMaxData = (int) data[i] & 0xFF;
@@ -71,6 +86,7 @@ public class ReceivedData {
 				} else {
 					mSlopZero = false;
 				}
+				mMinData =high;
 			} else {
 				mMinData = (int) data[i] & 0xFF;
 				mIncrease = false;
@@ -79,28 +95,55 @@ public class ReceivedData {
 				} else {
 					mSlopZero = false;
 				}
+				mMaxData = low;
 			}
+			long CheckTimeEnd = System.currentTimeMillis();
+			long CheckDuration = CheckTimeEnd - CheckTimeStart;
 
-			// long LastqTime = 0;
-			if (mMinData <= 100 && mSlopZero == true) {
-				long qTime = System.currentTimeMillis();
-				long qMilliInterval = qTime - mLastqTime;
-				float qRatePerSec = (1000 / qMilliInterval);
-				mHeartRate = (int) (60 * qRatePerSec);
-				mLastqTime = qTime;
-				mMinData = 500;
+			if ((mMinData <= 130) && (mSlopZero == true) && CheckDuration >= 100) {
+				mRateCount = mRateCount + 1;
+				// mCountRateHandler.postDelayed(mCountRateRunnable, 100);
 			}
+			CheckTimeStart = CheckTimeEnd;
+
 			mLastData = data[i];
+//			Log.v("Waveform", "data  " + mMinData);
 		}
+
 		// synchronized(mLock){
 		mPointer += length;
 		// }
 	}
-
-	public int getRate() {
-		return mHeartRate;
+	
+	public boolean emergencyEventCheck(){
+		if(mRateCount == 0){
+			mEmergencyEvent = true;
+		}else{
+			mEmergencyEvent = false;
+		}
+		return mEmergencyEvent;
 	}
 
+	public int countRate() {
+		synchronized (mLock) {
+			Log.v("Waveform", "RateCount  " + mRateCount);
+			Log.v("Waveform", "HeartRate  " + mHeartRate);
+			// long CountIntervalEnd = System.currentTimeMillis();
+			// Log.v("Waveform", "CountIntervalEnd  " + CountIntervalEnd);
+			// long CountIntervalMilli = CountIntervalEnd - mCountIntervalStart;
+			// Log.v("Waveform", "CountIntervalMilli  " + CountIntervalMilli);
+			// float CountInterval = CountIntervalMilli / 1000;
+			// float HeartInterval = CountInterval / mRateCount;
+			// float HeartRate = 60 / HeartInterval;
+			float HeartRate = (float) (6 * mRateCount);
+			mHeartRate = (int) HeartRate;
+			mRateCount = 0;
+			mCountIntervalStart = 0;
+			return mHeartRate;
+		}
+	}
+	
+	
 	public int[] getLatestData(int preferedSize, int sampleFactor) {
 
 		int[] data = null;
@@ -124,7 +167,7 @@ public class ReceivedData {
 			data = new int[avaliableSize];
 			// Convert Data form byte to integer .
 			for (int i = 0; i < avaliableSize; i++) {
-				data[i] = (int) mDataBuffer[start + i] & 0xFF;
+				data[i] = (int) (mDataBuffer[start + i] & 0xFF);
 			}
 			mGetPointer = end;
 		} else {
@@ -140,7 +183,7 @@ public class ReceivedData {
 			int actualSize = preferedSize;
 			data = new int[actualSize];
 			for (int i = 0; i < actualSize; i++) {
-				data[i] = (int) mDataBuffer[start + i * space] & 0xFF;
+				data[i] = (int) (mDataBuffer[start + i * space] & 0xFF);
 			}
 
 			mGetPointer = end;
