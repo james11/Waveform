@@ -11,7 +11,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
-public class UploadSample {
+public class UploadFile {
 
 	public String uploadFile(File file, String uri){
 		String response = null;

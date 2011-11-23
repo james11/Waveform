@@ -22,11 +22,11 @@ import android.view.SurfaceView;
  * 
  */
 public class WaveformView extends SurfaceView implements SurfaceHolder.Callback {
-	private static final int DEFAULT_X_SIZE = 800; // Size of DataSet ArrayList
+	private static final int DEFAULT_X_SIZE = 1400; // Size of DataSet ArrayList
 													// .
 	private static final int DEFAULT_PAINT_COLOR = 0xFFFF0000;
 	private static final int DEFAULT_LINE_WIDTH = 3;
-	private static final int GRID_SIZE = 10;
+	private static final int GRID_SIZE = 11;
 	private static final int GRID_COLOR = 0xFFCCCCCC;
 
 	private int mUpdatePeriod = 20;
@@ -191,10 +191,10 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 			int y = 0;
 			if (iter.hasNext())
 				y = iter.next();
-			mmPath.moveTo(0, base - y * deltaY);
+			mmPath.moveTo(0, base - y * 2 * deltaY);
 			for (int j = 1; iter.hasNext(); j++) {
 				y = iter.next();
-				mmPath.lineTo(j * deltaX, base - y * deltaY);
+				mmPath.lineTo(j * deltaX, base - y * 2 * deltaY);
 			}
 		}
 

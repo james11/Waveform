@@ -60,7 +60,7 @@ public class ReceivedData {
 			// if mDataBuffer is filled , save data to files and reset
 			// mDataBuffer to null .
 		} else {
-			ReceivedDataSaver.saveData(mDataBuffer, 0, currentPosition);
+			ReceivedDataSaver.saveData(mDataBuffer, 0, BUFFER_SIZE);
 
 			// Arrays.fill(mDataBuffer, DEFAULT_VALUE);
 			// synchronized(mLock){
@@ -101,7 +101,7 @@ public class ReceivedData {
 			long CheckDuration = CheckTimeEnd - CheckTimeStart;
 
 			if ((mMinData <= 130) && (mSlopZero == true)
-					&& CheckDuration >= 100) {
+					&& CheckDuration >= 300) {
 				mRateCount = mRateCount + 1;
 				// mCountRateHandler.postDelayed(mCountRateRunnable, 100);
 			}
