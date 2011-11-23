@@ -30,22 +30,24 @@ public final class R {
         public static final int buttonEEG=0x7f070005;
         public static final int buttonPause=0x7f070007;
         public static final int buttonScan=0x7f070002;
-        public static final int button_scan=0x7f070011;
-        public static final int button_send=0x7f07000c;
+        public static final int button_scan=0x7f070013;
+        public static final int button_send=0x7f07000e;
         public static final int channelNameBlock=0x7f070003;
-        public static final int discoverable=0x7f070014;
-        public static final int edit_text_out=0x7f07000b;
-        public static final int in=0x7f07000a;
-        public static final int insecure_connect_scan=0x7f070013;
+        public static final int discoverable=0x7f070016;
+        public static final int edit_text_out=0x7f07000d;
+        public static final int in=0x7f07000c;
+        public static final int insecure_connect_scan=0x7f070015;
         public static final int myTextView=0x7f070009;
         public static final int newDevices=0x7f070001;
-        public static final int new_devices=0x7f070010;
+        public static final int new_devices=0x7f070012;
         public static final int pairedDevices=0x7f070000;
-        public static final int paired_devices=0x7f07000e;
-        public static final int quitAPP=0x7f070015;
-        public static final int secure_connect_scan=0x7f070012;
-        public static final int title_new_devices=0x7f07000f;
-        public static final int title_paired_devices=0x7f07000d;
+        public static final int paired_devices=0x7f070010;
+        public static final int quitAPP=0x7f070017;
+        public static final int result=0x7f07000a;
+        public static final int secure_connect_scan=0x7f070014;
+        public static final int title_new_devices=0x7f070011;
+        public static final int title_paired_devices=0x7f07000f;
+        public static final int uploadBar=0x7f07000b;
         public static final int waveformContainer=0x7f070004;
         public static final int zoomControl=0x7f070008;
     }
@@ -67,6 +69,7 @@ public final class R {
         public static final int bt_not_enabled_leaving=0x7f050010;
         public static final int button_scan=0x7f05000a;
         public static final int discoverable=0x7f050013;
+        public static final int filenotexsit=0x7f050015;
         public static final int hello=0x7f050000;
         public static final int insecure_connect=0x7f050012;
         public static final int none_found=0x7f050007;
@@ -76,6 +79,7 @@ public final class R {
         /**  DeviceListActivity 
          */
         public static final int scanning=0x7f050004;
+        public static final int sdcarderror=0x7f050016;
         /**  Options Menu 
          */
         public static final int secure_connect=0x7f050011;
@@ -83,6 +87,7 @@ public final class R {
         /**  BluetoothChat 
          */
         public static final int send=0x7f05000b;
+        public static final int success=0x7f050017;
         public static final int title_connected_to=0x7f05000d;
         public static final int title_connecting=0x7f05000c;
         public static final int title_not_connected=0x7f05000e;

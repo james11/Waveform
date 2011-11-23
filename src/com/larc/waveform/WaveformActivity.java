@@ -1,5 +1,11 @@
 package com.larc.waveform;
 
+import java.io.File;
+import java.io.OutputStream;
+import java.io.PushbackInputStream;
+import java.io.RandomAccessFile;
+import java.net.Socket;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
@@ -8,7 +14,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.SmsManager;
 import android.util.Log;
@@ -17,13 +25,18 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.larc.bluetoothconnect.BluetoothService;
 import com.larc.bluetoothconnect.DeviceListActivity;
+import com.larc.waveform.data.ReceivedDataSaver;
+import com.larc.waveform.fileupload.StreamTool;
+import com.larc.waveform.fileupload.UploadLogService;
 import com.larc.waveform.service.DataReceiveService;
 import com.larc.waveform.ui.widget.WaveformView;
 import com.larc.waveform.ui.widget.WaveformView.WaveformAdapter;
@@ -74,10 +87,18 @@ public class WaveformActivity extends Activity implements
 
 	private String EMERGENCYC_CONNECTION_PHONE_NUMBER = "0918183964";
 	private String SELF_PHONE_NUMBER;
-	private String SMS_MESSEGE_CONTENT = "Emergency Event";
+	private String SMS_MESSEGE_CONTENT = "Emergency";
+	private String mSelfPhoneNumber;
 	private boolean mEmergency = false;
 	private boolean mConnectionCheck = false;
 	private boolean mSMSSended = false;
+
+	// private EditText filenameText;
+	private TextView resulView;
+	private ProgressBar uploadbar;
+	private UploadLogService logService;
+	private ReceivedDataSaver mReceivedDataSaver;
+	private String mfilenameText;
 
 	private BluetoothAdapter mBluetoothAdapter = null;
 	private DataReceiveService mDataReceiveService;
@@ -89,7 +110,7 @@ public class WaveformActivity extends Activity implements
 		initView();
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		setSignal(SIGNAL_EEG);
-		setPhoneNumber();
+		// setPhoneNumber();
 		startDrawing();
 	}
 
@@ -103,6 +124,10 @@ public class WaveformActivity extends Activity implements
 		mTextView = (TextView) findViewById(R.id.myTextView);
 		mWaveformContainer = (LinearLayout) findViewById(R.id.waveformContainer);
 		mChannelNameContainer = (LinearLayout) findViewById(R.id.channelNameBlock);
+
+		// filenameText = (EditText) this.findViewById(R.id.filename);
+		uploadbar = (ProgressBar) this.findViewById(R.id.uploadBar);
+		resulView = (TextView) this.findViewById(R.id.result);
 
 		mTextView.setText("4-Channel DBS Signals");
 		mTextView.setTextColor(COLOR_TEXT_NORMAL);
@@ -420,6 +445,13 @@ public class WaveformActivity extends Activity implements
 
 	}
 
+	private String getSelfPhoneNumber() {
+		TelephonyManager phoneManager = (TelephonyManager) getApplicationContext()
+				.getSystemService(Context.TELEPHONY_SERVICE);
+		mSelfPhoneNumber = phoneManager.getLine1Number();
+		return mSelfPhoneNumber;
+	}
+
 	private void energencyEventCheck() {
 		mEmergency = mDataReceiveService.emergencyEventCheck();
 		if (mEmergency == true && mConnectionCheck == true
@@ -430,14 +462,9 @@ public class WaveformActivity extends Activity implements
 		}
 	}
 
-	private void setPhoneNumber() {
-		TelephonyManager phoneManager = (TelephonyManager) getApplicationContext()
-				.getSystemService(Context.TELEPHONY_SERVICE);
-		SELF_PHONE_NUMBER = phoneManager.getLine1Number();
-	}
-
 	@SuppressWarnings("deprecation")
 	private void emergencyCall() {
+//		SELF_PHONE_NUMBER = getSelfPhoneNumber();
 		SmsManager smsManager = SmsManager.getDefault();
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(
 				WaveformActivity.this, 0, new Intent(), 0);
@@ -446,6 +473,121 @@ public class WaveformActivity extends Activity implements
 				pendingIntent, null);
 		Log.v("Waveform", "Emergency  ");
 		mSMSSended = true;
-
 	}
+
+//	public String getFileName() {
+//		mfilenameText = mReceivedDataSaver.getFileName();
+//		return mfilenameText;
+//	}
+//
+//	public void FileUpload() {
+//		logService = new UploadLogService(this);
+//		String filename = getFileName();
+//		// Check if SDCard is exist
+//		if (Environment.getExternalStorageState().equals(
+//				Environment.MEDIA_MOUNTED)) {
+//			// get SDCard directory
+//			File uploadFile = new File(
+//					Environment.getExternalStorageDirectory(), filename);
+//			if (uploadFile.exists()) {
+//				uploadFile(uploadFile);
+//			} else {
+//				Toast.makeText(WaveformActivity.this, R.string.filenotexsit, 1)
+//						.show();
+//			}
+//		} else {
+//			Toast.makeText(WaveformActivity.this, R.string.sdcarderror, 1)
+//					.show();
+//		}
+//
+//	}
+//
+//	/**
+//	 * user Handler to send message to the Thread that creates this Handler.
+//	 */
+//	private Handler handler = new Handler() {
+//		@Override
+//		public void handleMessage(Message msg) {
+//			// get uploading progress report
+//			int length = msg.getData().getInt("size");
+//			uploadbar.setProgress(length);
+//			float num = (float) uploadbar.getProgress()
+//					/ (float) uploadbar.getMax();
+//			int result = (int) (num * 100);
+//			// set report result
+//			resulView.setText(result + "%");
+//			// uploading success
+//			if (uploadbar.getProgress() == uploadbar.getMax()) {
+//				Toast.makeText(WaveformActivity.this, R.string.success, 1)
+//						.show();
+//			}
+//		}
+//	};
+//
+//	/**
+//	 * Create a Threat to uploading files. use Handler to avoid UI Thread ANR
+//	 * error.
+//	 * 
+//	 * @param final uploadFile
+//	 */
+//	private void uploadFile(final File uploadFile) {
+//		new Thread(new Runnable() {
+//			@Override
+//			public void run() {
+//				try {
+//					// set maximum length of files
+//					uploadbar.setMax((int) uploadFile.length());
+//					// Check if file has been uploaded before
+//					String souceid = logService.getBindId(uploadFile);
+//					// set header
+//					String head = "Content-Length=" + uploadFile.length()
+//							+ ";filename=" + uploadFile.getName()
+//							+ ";sourceid=" + (souceid == null ? "" : souceid)
+//							+ "/r/n";
+//					// Create socket an IOstream
+//					Socket socket = new Socket("192.168.1.100", 7878);
+//					OutputStream outStream = socket.getOutputStream();
+//					outStream.write(head.getBytes());
+//
+//					PushbackInputStream inStream = new PushbackInputStream(
+//							socket.getInputStream());
+//					// get id and position of byte[]
+//					String response = StreamTool.readLine(inStream);
+//					String[] items = response.split(";");
+//					String responseid = items[0].substring(items[0]
+//							.indexOf("=") + 1);
+//					String position = items[1].substring(items[1].indexOf("=") + 1);
+//					// if file has not been uploaded before , create a bindID in
+//					// database
+//					if (souceid == null) {
+//						logService.save(responseid, uploadFile);
+//					}
+//					RandomAccessFile fileOutStream = new RandomAccessFile(
+//							uploadFile, "r");
+//					fileOutStream.seek(Integer.valueOf(position));
+//					byte[] buffer = new byte[1024];
+//					int len = -1;
+//					// initialize ªø¶Ç data length
+//					int length = Integer.valueOf(position);
+//					while ((len = fileOutStream.read(buffer)) != -1) {
+//						outStream.write(buffer, 0, len);
+//						// set data length
+//						length += len;
+//						Message msg = new Message();
+//						msg.getData().putInt("size", length);
+//						handler.sendMessage(msg);
+//					}
+//					fileOutStream.close();
+//					outStream.close();
+//					inStream.close();
+//					socket.close();
+//					// delete data after uploading has done
+//					if (length == uploadFile.length())
+//						logService.delete(uploadFile);
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		}).start();
+//	}
 }

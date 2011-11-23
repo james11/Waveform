@@ -16,15 +16,15 @@ import android.os.Environment;
 
 public class ReceivedDataSaver {
 	private static final String FILE_PATH = "/Larc/Waveform/";
-	
-	
+	public static String mfileName;
+
 	public static class DataHeader {
-		
+
 		public long time;
 		public int type;
 		public int length;
-		
-		public byte[] toByte(){
+
+		public byte[] toByte() {
 			ByteBuffer buffer = ByteBuffer.allocate(16);
 			buffer.putLong(time);
 			buffer.putInt(type);
@@ -32,25 +32,26 @@ public class ReceivedDataSaver {
 			return buffer.array();
 		}
 	}
-	
-	public static void saveData(final byte[] inputData,final int offset, final int length){
-		final byte[] data = Arrays.copyOfRange(inputData, offset, offset+length);
-		Thread thread = new Thread(){
+
+	public static void saveData(final byte[] inputData, final int offset,
+			final int length) {
+		final byte[] data = Arrays.copyOfRange(inputData, offset, offset
+				+ length);
+		Thread thread = new Thread() {
 			@Override
-			public void run(){
-				StringBuilder builder = new StringBuilder(length*3);
-				for (int i=0; i< length; i++){
+			public void run() {
+				StringBuilder builder = new StringBuilder(length * 3);
+				for (int i = 0; i < length; i++) {
 					int value = (int) data[i] & 0xFF;
 					builder.append(String.format("%03d,", value));
 				}
-				
-				
+
 				Date date = new Date();
-				String fileName = generateFileName(date) +".LaRC.txt";
-				/***  ???  ***/
-				File dir = Environment.getExternalStorageDirectory();				//   ???
+				mfileName = generateFileName(date) + ".LaRC.txt";
+				/*** ??? ***/
+				File dir = Environment.getExternalStorageDirectory(); // ???
 				String dirPath = dir + FILE_PATH;
-				String fullPath = dir.getAbsolutePath()+FILE_PATH+fileName;
+				String fullPath = dir.getAbsolutePath() + FILE_PATH + mfileName;
 				File dirFile = new File(dirPath);
 				File outputFile = new File(fullPath);
 				try {
@@ -59,17 +60,17 @@ public class ReceivedDataSaver {
 				} catch (IOException e2) {
 					e2.printStackTrace();
 				}
-				
+
 				DataHeader header = new DataHeader();
 				header.time = date.getTime();
 				header.type = 0;
 				header.length = data.length;
-				
+
 				try {
 					FileOutputStream fos = new FileOutputStream(outputFile);
 					fos.write(header.toByte());
 					fos.write(builder.toString().getBytes());
-//					fos.write(data, offset, length);
+					// fos.write(data, offset, length);
 					fos.close();
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
@@ -79,10 +80,14 @@ public class ReceivedDataSaver {
 			}
 		};
 		thread.start();
-		
+
 	}
 
-	private static String generateFileName(Date date){
+	public String getFileName(){
+		return mfileName;
+	}
+	
+	private static String generateFileName(Date date) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		return dateFormat.format(date);
 	}

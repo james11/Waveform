@@ -42,6 +42,12 @@ public class DataReceiveService extends BluetoothService {
 		mInstance = this;
 	}
 
+	/**
+	 * This function will be called periodically.
+	 * 
+	 * @return
+	 */
+
 	public static DataReceiveService getInstance(Context context) {
 		if (mInstance == null) {
 			mInstance = new DataReceiveService(context);
@@ -53,24 +59,17 @@ public class DataReceiveService extends BluetoothService {
 	protected void onDataRead(int length, byte[] data) {
 		long CountIntervalStart = System.currentTimeMillis();
 		super.onDataRead(length, data);
-		mReceivedData.putData(length, data,CountIntervalStart);
+		mReceivedData.putData(length, data, CountIntervalStart);
 	}
 
-//	public long getCountIntervalStart() {
-//		return mCountIntervalStart;
-//	}
+	// public long getCountIntervalStart() {
+	// return mCountIntervalStart;
+	// }
 
-	/**
-	 * This function will be called periodically.
-	 * 
-	 * @return
-	 */
-	
-	
-	public boolean emergencyEventCheck(){
+	public boolean emergencyEventCheck() {
 		return mReceivedData.emergencyEventCheck();
 	}
-	
+
 	public int getHeartRate() {
 		return mReceivedData.countRate();
 	}

@@ -160,7 +160,7 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 
 	@SuppressWarnings("serial")
 	private static class DataSet extends LinkedList<Integer> {
-		public int upperBound = 800;
+		public int upperBound = 1000;
 		public int lowerBound = 0;
 		// public int currentValue = 0;
 		private int paintColor = DEFAULT_PAINT_COLOR;
@@ -191,10 +191,10 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 			int y = 0;
 			if (iter.hasNext())
 				y = iter.next();
-			mmPath.moveTo(0, base - y * 2 * deltaY);
+			mmPath.moveTo(0, base - y * deltaY);
 			for (int j = 1; iter.hasNext(); j++) {
 				y = iter.next();
-				mmPath.lineTo(j * deltaX, base - y * 2 * deltaY);
+				mmPath.lineTo(j * deltaX, base - y * deltaY);
 			}
 		}
 

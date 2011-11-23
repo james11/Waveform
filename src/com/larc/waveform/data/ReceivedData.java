@@ -31,7 +31,7 @@ public class ReceivedData {
 	private int mRateCount = 0;
 	public int mHeartRate;
 	private DataReceiveService mDataReceiveService;
-	
+
 	public boolean mEmergencyEvent = false;
 
 	// private int mdeltaData = 0;
@@ -86,7 +86,7 @@ public class ReceivedData {
 				} else {
 					mSlopZero = false;
 				}
-				mMinData =high;
+				mMinData = high;
 			} else {
 				mMinData = (int) data[i] & 0xFF;
 				mIncrease = false;
@@ -100,25 +100,26 @@ public class ReceivedData {
 			long CheckTimeEnd = System.currentTimeMillis();
 			long CheckDuration = CheckTimeEnd - CheckTimeStart;
 
-			if ((mMinData <= 130) && (mSlopZero == true) && CheckDuration >= 100) {
+			if ((mMinData <= 130) && (mSlopZero == true)
+					&& CheckDuration >= 100) {
 				mRateCount = mRateCount + 1;
 				// mCountRateHandler.postDelayed(mCountRateRunnable, 100);
 			}
 			CheckTimeStart = CheckTimeEnd;
 
 			mLastData = data[i];
-//			Log.v("Waveform", "data  " + mMinData);
+			// Log.v("Waveform", "data  " + mMinData);
 		}
 
 		// synchronized(mLock){
 		mPointer += length;
 		// }
 	}
-	
-	public boolean emergencyEventCheck(){
-		if(mRateCount == 0){
+
+	public boolean emergencyEventCheck() {
+		if (mRateCount == 0) {
 			mEmergencyEvent = true;
-		}else{
+		} else {
 			mEmergencyEvent = false;
 		}
 		return mEmergencyEvent;
@@ -142,8 +143,7 @@ public class ReceivedData {
 			return mHeartRate;
 		}
 	}
-	
-	
+
 	public int[] getLatestData(int preferedSize, int sampleFactor) {
 
 		int[] data = null;

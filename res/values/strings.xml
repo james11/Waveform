@@ -1,32 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="hello">Hello World, WaveformActivity!</string>
-	<string name="app_name">Waveform</string>
-	<string name="EEG">4-Channel EEG signals</string>
-	<string name="DBS">4-Channel DBS signals</string>
 
-	<!-- DeviceListActivity -->
-	<string name="scanning">scanning for devices...</string>
-	<string name="select_device">select a device to connect</string>
-	<string name="none_paired">No devices have been paired</string>
-	<string name="none_found">No devices found</string>
-	<string name="title_paired_devices">Paired Devices</string>
-	<string name="title_other_devices">Other Available Devices</string>
-	<string name="button_scan">Scan for devices</string>
+    <string name="hello">Hello World, WaveformActivity!</string>
+    <string name="app_name">Waveform</string>
+    <string name="EEG">4-Channel EEG signals</string>
+    <string name="DBS">4-Channel DBS signals</string>
 
-	<!-- BluetoothChat -->
-	<string name="send">Send</string>
-	<string name="title_connecting">connecting...</string>
-	<string name="title_connected_to">connected to</string>
-	<string name="title_not_connected">not connectd</string>
-	<string name="not_connected">You are not connected to a device</string>
-	<string name="bt_not_enabled_leaving">Bluetooth was not enabled. Leaving Bluetooth Chat.
+    <!-- DeviceListActivity -->
+    <string name="scanning">scanning for devices...</string>
+    <string name="select_device">select a device to connect</string>
+    <string name="none_paired">No devices have been paired</string>
+    <string name="none_found">No devices found</string>
+    <string name="title_paired_devices">Paired Devices</string>
+    <string name="title_other_devices">Other Available Devices</string>
+    <string name="button_scan">Scan for devices</string>
+
+    <!-- BluetoothChat -->
+    <string name="send">Send</string>
+    <string name="title_connecting">connecting...</string>
+    <string name="title_connected_to">connected to</string>
+    <string name="title_not_connected">not connectd</string>
+    <string name="not_connected">You are not connected to a device</string>
+    <string name="bt_not_enabled_leaving">Bluetooth was not enabled. Leaving Bluetooth Chat.
 	</string>
 
-	<!-- Options Menu -->
-	<string name="secure_connect">Connect a device - Secure</string>
-	<string name="insecure_connect">Connect a device - Insecure</string>
-	<string name="discoverable">Make discoverable</string>
-	<string name="quit">Quit</string>
+    <!-- Options Menu -->
+    <string name="secure_connect">Connect a device - Secure</string>
+    <string name="insecure_connect">Connect a device - Insecure</string>
+    <string name="discoverable">Make discoverable</string>
+    <string name="quit">Quit</string>
+    <string name="filenotexsit">Uploading failed , no such value existed</string>
+    <string name="sdcarderror">Uploading failed , no such value existed</string>
+    <string name="success">Uploading success</string>
 
 </resources>
