@@ -9,7 +9,7 @@ public class ReceivedData {
 	private static final String TAG = "ReceivedData";
 	private static final boolean VERBOSE = true;
 
-	private static final int BUFFER_SIZE = 1024 * 400;
+	private static final int BUFFER_SIZE = 1024 * 40;
 	private static final byte DEFAULT_VALUE = (byte) 0x80;
 
 	private byte[] mDataBuffer = new byte[BUFFER_SIZE];
@@ -25,32 +25,22 @@ public class ReceivedData {
 	private boolean mLastIncrease = true;
 	private boolean mSlopZero = false;
 
-	private long mCountIntervalStart = 0;
-
-	// private long mLastqTime = 0;
 	private int mRateCount = 0;
 	public int mHeartRate;
-	private DataReceiveService mDataReceiveService;
+	private int miPointer = -500;
 
 	public boolean mEmergencyEvent = false;
 
-	// private int mdeltaData = 0;
-	// private WaveformActivity mWaveformActivity;
 	private byte mLastData = 0;
 
-	// private Handler mCountRateHandler = new Handler();
-	// mCountRateHandler = new Handler();
-
-	public void putData(int length, byte[] data, long CountIntervalStart) {
-		// mRateCount = 0;
-		// long mDataPutTime = System.currentTimeMillis();
-		mCountIntervalStart = CountIntervalStart;
+	public void putData(int length, byte[] data) {
 
 		// if (VERBOSE)
 		// Log.d(TAG, "putData: size = "+length);
 
 		int currentPosition = 0;
 		// Only one Thread is allowed to entry synchronized{} block at one time
+
 		// synchronized(mLock){
 		currentPosition = mPointer;
 		// }
@@ -61,8 +51,8 @@ public class ReceivedData {
 			// mDataBuffer to null .
 		} else {
 			ReceivedDataSaver.saveData(mDataBuffer, 0, BUFFER_SIZE);
-
-			// Arrays.fill(mDataBuffer, DEFAULT_VALUE);
+			Log.v("Waveform", "SaveData");
+			
 			// synchronized(mLock){
 			mPointer = 0;
 			mGetPointer = 0;
@@ -97,18 +87,16 @@ public class ReceivedData {
 				}
 				mMaxData = low;
 			}
-			long CheckTimeEnd = System.currentTimeMillis();
-			long CheckDuration = CheckTimeEnd - CheckTimeStart;
+			int deltai = java.lang.Math.abs(i - miPointer);
 
-			if ((mMinData <= 130) && (mSlopZero == true)
-					&& CheckDuration >= 300) {
+			if ((mMinData <= 150) && (mSlopZero == true) && (deltai >= 300)) {
+				miPointer = i;
+
 				mRateCount = mRateCount + 1;
-				// mCountRateHandler.postDelayed(mCountRateRunnable, 100);
+				Log.v("Waveform", "mMinData = " + mMinData);
 			}
-			CheckTimeStart = CheckTimeEnd;
 
 			mLastData = data[i];
-			// Log.v("Waveform", "data  " + mMinData);
 		}
 
 		// synchronized(mLock){
@@ -128,18 +116,10 @@ public class ReceivedData {
 	public int countRate() {
 		synchronized (mLock) {
 			Log.v("Waveform", "RateCount  " + mRateCount);
+			float HeartRate = (float) (6 * mRateCount + 3);
 			Log.v("Waveform", "HeartRate  " + mHeartRate);
-			// long CountIntervalEnd = System.currentTimeMillis();
-			// Log.v("Waveform", "CountIntervalEnd  " + CountIntervalEnd);
-			// long CountIntervalMilli = CountIntervalEnd - mCountIntervalStart;
-			// Log.v("Waveform", "CountIntervalMilli  " + CountIntervalMilli);
-			// float CountInterval = CountIntervalMilli / 1000;
-			// float HeartInterval = CountInterval / mRateCount;
-			// float HeartRate = 60 / HeartInterval;
-			float HeartRate = (float) (6 * mRateCount);
 			mHeartRate = (int) HeartRate;
 			mRateCount = 0;
-			mCountIntervalStart = 0;
 			return mHeartRate;
 		}
 	}
@@ -156,11 +136,12 @@ public class ReceivedData {
 		end = (end + start) / 2;
 		avaliableSize = end - start;
 		// }
+		
 		// if (VERBOSE)
 		// Log.v(TAG, "getLatestData: avaliableSize = " + avaliableSize);
 
 		if (avaliableSize <= 0 || start >= BUFFER_SIZE) {
-			Log.v("Waveform", "no data avaliable");
+			// Log.v("Waveform", "no data avaliable");
 			mGetPointer = 0;
 			return null;
 		} else if (preferedSize >= avaliableSize) {

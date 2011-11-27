@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.SmsManager;
@@ -40,6 +41,10 @@ public class WaveformActivity extends Activity implements
 
 	private static final int COLOR_TEXT_NORMAL = Color.GRAY;
 	private static final int COLOR_TEXT_SELECTED = 0xFFFF9900;
+	private static final int SAFE_RATE_COLOR = 0xFF00AA00;
+	private static final int RATE_90_COLOE = 0xFFFF6600;
+	private static final int RATE_110_COLOR = 0xFFCC0000;
+	private static final int RATE_140_COLOR = 0xFF660066;
 
 	private static final int SIGNAL_EEG = DataReceiveService.CHANNEL_EEG;
 	private static final int SIGNAL_DBS = DataReceiveService.CHANNEL_DBS;
@@ -71,11 +76,11 @@ public class WaveformActivity extends Activity implements
 	private int mSignal = SIGNAL_EEG;
 	private boolean mIsPlaying = true;
 
-	private int mRateUpdatePeriod = 10000;
-	private int mRate = 110;
-	private int mLast20SecRate = 0;
-	private int mLast10SecRate = 120;
 	private Handler mRateRefreshHandler;
+	private int mRateUpdatePeriod = 10000;
+	private int mRate = 30;
+	private int mLast20SecRate = 0;
+	private int mLast10SecRate = 90;
 
 	private String EMERGENCYC_CONNECTION_PHONE_NUMBER = "0918183964";
 	private String SELF_PHONE_NUMBER;
@@ -85,9 +90,10 @@ public class WaveformActivity extends Activity implements
 	private boolean mConnectionCheck = false;
 	private boolean mSMSSended = false;
 
-	private long mUploadPeriod = 1000 * 3 * 1;
+	private Handler mUploadHandler;
+	private long mUploadPeriod = 1000 * 60 * 1 / 3;
 	private UploadFile mUploadFile;
-	private File[] mFile;
+	private File[] mFile = new File[1024];
 
 	private TextView resulView;
 	private ProgressBar uploadbar;
@@ -137,6 +143,9 @@ public class WaveformActivity extends Activity implements
 		mRateRefreshHandler = new Handler();
 		mRateRefreshHandler.post(mRateRefreshRunnable);
 
+		mUploadHandler = new Handler();
+		mUploadHandler.postDelayed(mUploadRunnable, mUploadPeriod);
+
 		// create reusable layout parameter for adding view
 		LinearLayout.LayoutParams params = new LayoutParams(
 				LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, 1f);
@@ -146,7 +155,7 @@ public class WaveformActivity extends Activity implements
 			mTextChannelNameArray[i] = new TextView(this);
 			mTextChannelNameArray[i].setText("ECG Channel");// + (i + 1));
 			mTextChannelNameArray[i].setTextSize(20);
-			mTextChannelNameArray[i].setTextColor(0xffff9900);
+			mTextChannelNameArray[i].setTextColor(0xFF00CC00);
 			mTextChannelNameArray[i].setGravity(android.view.Gravity.CENTER);
 
 			mWaveformArray[i] = new WaveformView(this);
@@ -161,14 +170,36 @@ public class WaveformActivity extends Activity implements
 	Runnable mRateRefreshRunnable = new Runnable() {
 		public void run() {
 			energencyEventCheck();
-			mLast20SecRate = mLast10SecRate;
-			mLast10SecRate = mRate;
 			mRate = getRate();
-			int Rate = (2 * mRate + 3 * mLast10SecRate + 4 * mLast20SecRate) / 9;
+			// Ignore error count , when heart rate count during 1 min >= 150
+			// or <= 50
+			int deltaRate = java.lang.Math.abs(mRate - mLast10SecRate);
+			if (deltaRate >= 40) {
+				mRate = mLast10SecRate;
+			}
+			Log.v("Waveform", "mRate = " + mRate);
+
+			int Rate = (4 * mRate + 3 * mLast10SecRate + 2 * mLast20SecRate) / 9;
 			for (int i = 0; i < WAVEFORM_COUNT; i++) {
+
+				if ((mRate >= 100)) {
+					if ((mRate >= 110)) {
+						if ((mRate >= 130)) {
+							mTextChannelNameArray[i]
+									.setTextColor(RATE_140_COLOR);
+						}
+						mTextChannelNameArray[i].setTextColor(RATE_110_COLOR);
+					}
+					mTextChannelNameArray[i].setTextColor(RATE_90_COLOE);
+				} else {
+					mTextChannelNameArray[i].setTextColor(SAFE_RATE_COLOR);
+				}
+
 				mTextChannelNameArray[i].setText("ECG Channel"
 						+ "\nHeart Rate = " + Rate + " /min");
 			}
+			mLast20SecRate = mLast10SecRate;
+			mLast10SecRate = mRate;
 			mRateRefreshHandler.postDelayed(this, mRateUpdatePeriod);
 		}
 	};
@@ -442,6 +473,7 @@ public class WaveformActivity extends Activity implements
 		TelephonyManager phoneManager = (TelephonyManager) getApplicationContext()
 				.getSystemService(Context.TELEPHONY_SERVICE);
 		mSelfPhoneNumber = phoneManager.getLine1Number();
+		Log.v("Waveform", "PhoneNumberGet = " + mSelfPhoneNumber);
 		return mSelfPhoneNumber;
 	}
 
@@ -471,50 +503,28 @@ public class WaveformActivity extends Activity implements
 	Runnable mUploadRunnable = new Runnable() {
 		public void run() {
 
-			String uri = "127.0.0.1";
-//			Boolean UploadCheck = mReceivedDataSaver.CheckUpload();
+			String uri = "http://140.114.14.63/httpPost.php";
 			int FileCount = mReceivedDataSaver.getFileCount();
-			// if (UploadCheck == true) {
-			for (int i = 1; i <= FileCount; i++) {
-				mFile[i] = mReceivedDataSaver.getFile(i);
-				mUploadFile.uploadFile(mFile[i], uri);
-			}
-			// }
 
-			mRateRefreshHandler.postDelayed(this, mUploadPeriod);
+			if (Environment.getExternalStorageState().equals(
+					Environment.MEDIA_MOUNTED)) {
+				for (int i = 1; i < FileCount; i++) {
+					mFile[i - 1] = mReceivedDataSaver.getFile(i);
+					mUploadFile.uploadFile(mFile[i - 1], uri);
+				}
+				mReceivedDataSaver.setFileCount(1);
+				mRateRefreshHandler.postDelayed(this, mUploadPeriod);
+			} else {
+				Toast.makeText(WaveformActivity.this, R.string.sdcarderror, 1)
+						.show();
+			}
+			Log.v("Waveform", "UploadFileRunnable");
 		}
 	};
 
-//	public String getFileName() {
-//		mfilenameText = mReceivedDataSaver.getFileName();
-//		return mfilenameText;
-//	}
-
-	// public void FileUpload() {
-	// logService = new UploadLogService(this);
-	// String filename = getFileName();
-	// // Check if SDCard is exist
-	// if (Environment.getExternalStorageState().equals(
-	// Environment.MEDIA_MOUNTED)) {
-	// // get SDCard directory
-	// File uploadFile = new File(
-	// Environment.getExternalStorageDirectory(), filename);
-	// if (uploadFile.exists()) {
-	// uploadFile(uploadFile);
-	// } else {
-	// Toast.makeText(WaveformActivity.this, R.string.filenotexsit, 1)
-	// .show();
-	// }
-	// } else {
-	// Toast.makeText(WaveformActivity.this, R.string.sdcarderror, 1)
-	// .show();
-	// }
-	//
-	// }
-	//
-	// /**
-	// * user Handler to send message to the Thread that creates this Handler.
-	// */
+	/**
+	 * user Handler to send message to the Thread that creates this Handler.
+	 */
 	// private Handler handler = new Handler() {
 	// @Override
 	// public void handleMessage(Message msg) {
@@ -533,13 +543,13 @@ public class WaveformActivity extends Activity implements
 	// }
 	// }
 	// };
-	//
-	// /**
-	// * Create a Threat to uploading files. use Handler to avoid UI Thread ANR
-	// * error.
-	// *
-	// * @param final uploadFile
-	// */
+
+	/**
+	 * Create a Threat to uploading files. use Handler to avoid UI Thread ANR
+	 * error.
+	 * 
+	 * @param final uploadFile
+	 */
 	// private void uploadFile(final File uploadFile) {
 	// new Thread(new Runnable() {
 	// @Override

@@ -4,10 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.nio.ByteBuffer;
-import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -18,7 +15,7 @@ public class ReceivedDataSaver {
 	private static final String FILE_PATH = "/Larc/Waveform/";
 	public static File mOutputFile;
 	public static int mFileCount = 0;
-	public static File[] mFile;
+	public static File[] mFileList = new File[1024];
 
 	public static class DataHeader {
 
@@ -37,12 +34,12 @@ public class ReceivedDataSaver {
 
 	public static void saveData(final byte[] inputData, final int offset,
 			final int length) {
-		mFileCount = +1;
 		final byte[] data = Arrays.copyOfRange(inputData, offset, offset
 				+ length);
 		Thread thread = new Thread() {
 			@Override
 			public void run() {
+
 				// StringBuilder builder = new StringBuilder(length * 3);
 				// for (int i = 0; i < length; i++) {
 				// int value = (int) data[i] & 0xFF;
@@ -74,6 +71,10 @@ public class ReceivedDataSaver {
 					// fos.write(builder.toString().getBytes());
 					fos.write(data, offset, length);
 					fos.close();
+
+					mFileCount = +1;
+					mFileList[mFileCount] = mOutputFile;
+
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
@@ -81,30 +82,27 @@ public class ReceivedDataSaver {
 				}
 			}
 		};
+
 		thread.start();
-		listFile();
 
 	}
 
-	public static void listFile() {
-		mFile[mFileCount] = mOutputFile;
-	}
+	// public static void listFile() {
+	// mFile[mFileCount] = mOutputFile;
+	// Log.v("Waveform", "ListFile");
+	// }
 
 	public File getFile(int i) {
-		return mFile[i];
+		return mFileList[i];
 	}
 
 	public int getFileCount() {
 		return mFileCount;
 	}
 
-//	public boolean CheckUpload() {
-//		if (mFileCount >= 10) {
-//			return true;
-//		} else {
-//			return false;
-//		}
-//	}
+	public void setFileCount(int value) {
+		mFileCount = value;
+	}
 
 	/** format the input date into the form (yyyyMMddHHmmss) we want **/
 	private static String generateFileName(Date date) {

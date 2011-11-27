@@ -57,9 +57,8 @@ public class DataReceiveService extends BluetoothService {
 
 	@Override
 	protected void onDataRead(int length, byte[] data) {
-		long CountIntervalStart = System.currentTimeMillis();
 		super.onDataRead(length, data);
-		mReceivedData.putData(length, data, CountIntervalStart);
+		mReceivedData.putData(length, data);
 	}
 
 	// public long getCountIntervalStart() {
