@@ -36,7 +36,6 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 	private RefreshThread mRefreshThread;
 	private ArrayList<DataSet> mDataSets;
 	private WaveformAdapter mAdapter;
-	// private InputStream mInputStream;
 
 	private Picture mGridPicture;
 
@@ -67,6 +66,7 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 		getHolder().addCallback(this);
 	}
 
+//=====start=====functions of SurfaceCallback
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
@@ -88,7 +88,8 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 			mRefreshThread = null;
 		}
 	}
-
+//=====end=====functions of SurfaceCallback
+	
 	private class RefreshThread extends Thread {
 
 		// private Handler mmHandler;
@@ -120,6 +121,9 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 						data.initPath(width, height);
 					}
 					Canvas canvas = getHolder().lockCanvas();
+					if (canvas == null){
+						return;
+					}
 					canvas.drawColor(Color.WHITE);
 					drawCanvas(canvas);
 					getHolder().unlockCanvasAndPost(canvas);
@@ -160,14 +164,31 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 
 	@SuppressWarnings("serial")
 	private static class DataSet extends LinkedList<Integer> {
-		public int upperBound = 1000;
-		public int lowerBound = 0;
-		// public int currentValue = 0;
+		private static final int DEFAULT_UPPER = 1000;
+		private static final int DEFAULT_LOWER = 0;
+		private final int mmUpperBound;
+		private final int mmLowerBound;
+		private final int mmOffset;
+
 		private int paintColor = DEFAULT_PAINT_COLOR;
 		private int lineWidth = DEFAULT_LINE_WIDTH;
 
 		private Path mmPath;
 
+		// fill the ArrayList with "0" at first .
+		public DataSet(int size) {
+			this(size, DEFAULT_UPPER, DEFAULT_LOWER, 0);
+		}
+
+		public DataSet(int size, int upperBound, int lowerBound, int offset) {
+			mmUpperBound = upperBound;
+			mmLowerBound = lowerBound;
+			mmOffset = offset;
+			for (int i = 0; i < size; i++) {
+				add(0);
+			}
+		}
+		
 		public Path getPath() {
 			return mmPath;
 		}
@@ -177,13 +198,11 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 			int size = size();
 			if (size <= 0)
 				size = 1;
-			int range = upperBound - lowerBound;
+			int range = mmUpperBound - mmLowerBound;
 			float deltaX = (float) width / (float) size;
 			float deltaY = (float) height / (float) range;
 
-			// Adjust plotting base and deltaY here (Tablet +200 , SmartPhone
-			// +100)
-			float base = (height / 2) + 100;
+			float base = (height / 2) + mmOffset;
 
 			Paint paint = new Paint();
 			paint.setColor(paintColor);
@@ -202,13 +221,6 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 			}
 		}
 
-		// fill the ArrayList with "0" at first .
-		public DataSet(int size) {
-			for (int i = 0; i < size; i++) {
-				add(0);
-			}
-		}
-
 		// get the size of "Value" , which is the number of times needed to
 		// pushValue() .
 		public void pushData(int[] value) {
@@ -220,12 +232,7 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 			}
 		}
 
-		// public void push() {
-		// push(currentValue);
-		// }
-
 		public void push(int value) {
-			// currentValue = value;
 			addLast(value);
 			removeFirst();
 		}
@@ -235,48 +242,16 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 	protected void onLayout(boolean changed, int left, int top, int right,
 			int bottom) {
 		super.onLayout(changed, left, top, right, bottom);
-		int width = getWidth(); // of the View .
+//		Initialize the grid lines here
+		int width = getWidth();
 		int height = getHeight();
 		mGridPicture = getGridPicture(width, height);
-
 	}
 
-	private static Picture getGridPicture(int width, int height) {
-		Picture picture = new Picture();
-		Canvas canvas = picture.beginRecording(width, height);
-		// draw background grid line
-		Paint paint = new Paint();
-		paint.setColor(GRID_COLOR);
-		paint.setStyle(Style.STROKE);
-
-		int largeGridSize = GRID_SIZE * 5;
-		// vertical
-		for (int left = 0; left < width; left += GRID_SIZE) {
-			if (left % largeGridSize == 0) {
-				paint.setStrokeWidth(2);
-			} else {
-				paint.setStrokeWidth(1);
-			}
-			canvas.drawLine(left, 0, left, height, paint);
-		}
-		// horizontal
-		for (int top = 0; top < height; top += GRID_SIZE) {
-			if (top % largeGridSize == 0) {
-				paint.setStrokeWidth(2);
-			} else {
-				paint.setStrokeWidth(1);
-			}
-			canvas.drawLine(0, top, width, top, paint);
-		}
-		// draw border
-		paint.setColor(Color.BLACK);
-		paint.setStrokeWidth(2);
-		canvas.drawRect(0, 0, width, height, paint);
-		picture.endRecording();
-		return picture;
-	}
-
-	// Plotting grid on layout and update drawing data on view
+	/**
+	 * Plotting grid on layout and update drawing data on canvas
+	 * @param canvas
+	 */
 	protected void drawCanvas(Canvas canvas) {
 		if (mGridPicture != null) {
 			mGridPicture.draw(canvas);
@@ -309,6 +284,11 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 
 	public void createNewDataSet(int size) {
 		DataSet set = new DataSet(size);
+		mDataSets.add(set);
+	}
+	
+	public void createNewDataSet(int size, int upperBound, int lowerBound, int offset) {
+		DataSet set = new DataSet(size, upperBound, lowerBound, offset);
 		mDataSets.add(set);
 	}
 
@@ -355,4 +335,38 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 		mAdapter = adapter;
 	}
 
+	private static Picture getGridPicture(int width, int height) {
+		Picture picture = new Picture();
+		Canvas canvas = picture.beginRecording(width, height);
+		// draw background grid line
+		Paint paint = new Paint();
+		paint.setColor(GRID_COLOR);
+		paint.setStyle(Style.STROKE);
+
+		int largeGridSize = GRID_SIZE * 5;
+		// vertical
+		for (int left = 0; left < width; left += GRID_SIZE) {
+			if (left % largeGridSize == 0) {
+				paint.setStrokeWidth(2);
+			} else {
+				paint.setStrokeWidth(1);
+			}
+			canvas.drawLine(left, 0, left, height, paint);
+		}
+		// horizontal
+		for (int top = 0; top < height; top += GRID_SIZE) {
+			if (top % largeGridSize == 0) {
+				paint.setStrokeWidth(2);
+			} else {
+				paint.setStrokeWidth(1);
+			}
+			canvas.drawLine(0, top, width, top, paint);
+		}
+		// draw border
+		paint.setColor(Color.BLACK);
+		paint.setStrokeWidth(2);
+		canvas.drawRect(0, 0, width, height, paint);
+		picture.endRecording();
+		return picture;
+	}
 }

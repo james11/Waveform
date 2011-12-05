@@ -6,18 +6,23 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
 import android.os.Environment;
 
-public class ReceivedDataSaver {
-	private static final String FILE_PATH = "/Larc/Waveform/";
-	public static File mOutputFile;
-	public static int mFileCount = 0;
-	public static File[] mFileList = new File[1024];
+import com.larc.waveform.WaveformActivity;
+import com.larc.waveform.WaveformApplication;
+import com.larc.waveform.data.upload.UploadTask;
+import com.larc.waveform.data.upload.WaveformUploadService;
+import com.larc.waveform.service.HealthDeviceBluetoothService;
 
-	public static class DataHeader {
+public class DataFileManager {
+	private static final String OUTPUT_FILE_PATH = "/Larc/Waveform/";
+	private static DataFileManager sInstance;
+
+	public static class DataFileHeader {
 
 		public long time;
 		public int type;
@@ -31,11 +36,23 @@ public class ReceivedDataSaver {
 			return buffer.array();
 		}
 	}
+	public final ArrayList<File> mSavedFileList = new ArrayList<File>();
+	private String mId="xxx";
+	private String mName="Larc";
+	private String mPhoneNumber="09xxxxxxxx";
+	
+	public static DataFileManager getInstance(){
+		if (sInstance == null){
+			sInstance = new DataFileManager();
+		}
+		return sInstance;
+	}
 
-	public static void saveData(final byte[] inputData, final int offset,
+	public void saveData(final byte[] inputData, final int offset,
 			final int length) {
 		final byte[] data = Arrays.copyOfRange(inputData, offset, offset
 				+ length);
+		
 		Thread thread = new Thread() {
 			@Override
 			public void run() {
@@ -49,31 +66,30 @@ public class ReceivedDataSaver {
 				Date date = new Date();
 				String mfileName = generateFileName(date) + ".LaRC.txt";
 				File dir = Environment.getExternalStorageDirectory();
-				String dirPath = dir + FILE_PATH;
-				String fullPath = dir.getAbsolutePath() + FILE_PATH + mfileName;
+				String dirPath = dir + OUTPUT_FILE_PATH;
+				String fullPath = dir.getAbsolutePath() + OUTPUT_FILE_PATH + mfileName;
 				File dirFile = new File(dirPath);
-				mOutputFile = new File(fullPath);
+				File outputFile = new File(fullPath);
 				try {
 					dirFile.mkdirs();
-					mOutputFile.createNewFile();
+					outputFile.createNewFile();
 				} catch (IOException e2) {
 					e2.printStackTrace();
 				}
 
-				DataHeader header = new DataHeader();
+				DataFileHeader header = new DataFileHeader();
 				header.time = date.getTime();
 				header.type = 0;
 				header.length = data.length;
 
 				try {
-					FileOutputStream fos = new FileOutputStream(mOutputFile);
+					FileOutputStream fos = new FileOutputStream(outputFile);
 					fos.write(header.toByte());
 					// fos.write(builder.toString().getBytes());
 					fos.write(data, offset, length);
 					fos.close();
 
-					mFileCount = +1;
-					mFileList[mFileCount] = mOutputFile;
+					onFileSaved(outputFile);
 
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
@@ -86,27 +102,37 @@ public class ReceivedDataSaver {
 		thread.start();
 
 	}
-
-	// public static void listFile() {
-	// mFile[mFileCount] = mOutputFile;
-	// Log.v("Waveform", "ListFile");
-	// }
-
-	public File getFile(int i) {
-		return mFileList[i];
+	
+	protected void onFileSaved(File savedFile){
+		mSavedFileList.add(savedFile);
+		if (mSavedFileList.size()>2){
+			uploadSavedFiles();
+		}
 	}
 
-	public int getFileCount() {
-		return mFileCount;
-	}
-
-	public void setFileCount(int value) {
-		mFileCount = value;
+	private void uploadSavedFiles() {
+		for(int i=0; i<mSavedFileList.size(); i++){
+			File file = mSavedFileList.get(i);
+			WaveformUploadService.startUploadData(WaveformApplication.getInstance(), new UploadTask(file, mId, mName, mPhoneNumber));
+			mSavedFileList.clear();
+		}
 	}
 
 	/** format the input date into the form (yyyyMMddHHmmss) we want **/
 	private static String generateFileName(Date date) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		return dateFormat.format(date);
+	}
+	
+	public void setId(String id){
+		mId = id;
+	}
+	
+	public void setName(String name){
+		mName = name;
+	}
+	
+	public void setPhoneNumber(String phoneNumber){
+		mPhoneNumber = phoneNumber;
 	}
 }

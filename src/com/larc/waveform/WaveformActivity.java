@@ -10,10 +10,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
+import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
-import android.telephony.gsm.SmsManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,9 +27,9 @@ import android.widget.Toast;
 
 import com.larc.bluetoothconnect.BluetoothService;
 import com.larc.bluetoothconnect.DeviceListActivity;
-import com.larc.waveform.data.ReceivedDataSaver;
-import com.larc.waveform.fileupload.UploadFile;
-import com.larc.waveform.service.DataReceiveService;
+import com.larc.waveform.data.DataFileManager;
+import com.larc.waveform.data.upload.WaveformUploadService;
+import com.larc.waveform.service.HealthDeviceBluetoothService;
 import com.larc.waveform.ui.widget.WaveformView;
 import com.larc.waveform.ui.widget.WaveformView.WaveformAdapter;
 
@@ -46,8 +45,8 @@ public class WaveformActivity extends Activity implements
 	private static final int RATE_110_COLOR = 0xFFCC0000;
 	private static final int RATE_140_COLOR = 0xFF660066;
 
-	private static final int SIGNAL_EEG = DataReceiveService.CHANNEL_EEG;
-	private static final int SIGNAL_DBS = DataReceiveService.CHANNEL_DBS;
+	private static final int SIGNAL_EEG = HealthDeviceBluetoothService.CHANNEL_EEG;
+	private static final int SIGNAL_DBS = HealthDeviceBluetoothService.CHANNEL_DBS;
 
 	// Codes for activity result
 	private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
@@ -92,16 +91,15 @@ public class WaveformActivity extends Activity implements
 
 	private Handler mUploadHandler;
 	private long mUploadPeriod = 1000 * 60 * 1 / 3;
-	private UploadFile mUploadFile;
 	private File[] mFile = new File[1024];
 
 	private TextView resulView;
 	private ProgressBar uploadbar;
-	private ReceivedDataSaver mReceivedDataSaver;
+	private DataFileManager mReceivedDataSaver;
 	private String mfilenameText;
 
 	private BluetoothAdapter mBluetoothAdapter = null;
-	private DataReceiveService mDataReceiveService;
+	private HealthDeviceBluetoothService mDataReceiveService;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -242,10 +240,10 @@ public class WaveformActivity extends Activity implements
 
 		switch (id) {
 		case R.id.buttonDBS:
-			mSignal = SIGNAL_DBS;
+			setSignal(SIGNAL_DBS);
 			break;
 		case R.id.buttonEEG:
-			mSignal = SIGNAL_EEG;
+			setSignal(SIGNAL_DBS);
 			break;
 		case R.id.buttonPause:
 			pauseAndStartDrawing();
@@ -254,11 +252,6 @@ public class WaveformActivity extends Activity implements
 			break;
 		}
 
-	}
-
-	public void setCurrentSignal(int signal) {
-		mSignal = signal;
-		refreshSignalButtonAndText();
 	}
 
 	private void refreshSignalButtonAndText() {
@@ -320,7 +313,7 @@ public class WaveformActivity extends Activity implements
 	public void resetWaveformViewData() {
 		for (int i = 0; i < mWaveformArray.length; i++) {
 			mWaveformArray[i].removeAllDataSet();
-			mWaveformArray[i].createNewDataSet(DEFAULT_SIZE);
+			mWaveformArray[i].createNewDataSet(DEFAULT_SIZE, 1000, 0, 100);
 			mWaveformArray[i].setLineColor(0, LINE_COLOR_ARRAY[i]);
 		}
 	}
@@ -461,7 +454,7 @@ public class WaveformActivity extends Activity implements
 		// Initialize the DataReceiveService to perform bluetooth connections if
 		// no DataReceive source .
 		if (mDataReceiveService == null) {
-			mDataReceiveService = DataReceiveService.getInstance(this);
+			mDataReceiveService = HealthDeviceBluetoothService.getInstance(this);
 			mDataReceiveService.setHandler(mBluetoothHandler);
 			mDataReceiveService.start();
 		}
@@ -477,16 +470,15 @@ public class WaveformActivity extends Activity implements
 	}
 
 	private void energencyEventCheck() {
-		mEmergency = mDataReceiveService.emergencyEventCheck();
-		if (mEmergency == true && mConnectionCheck == true
-				&& mSMSSended == false) {
-//			emergencyCall();
-		} else {
-
-		}
+//		mEmergency = mDataReceiveService.emergencyEventCheck();
+//		if (mEmergency == true && mConnectionCheck == true
+//				&& mSMSSended == false) {
+////			emergencyCall();
+//		} else {
+//
+//		}
 	}
 
-	@SuppressWarnings("deprecation")
 	private void emergencyCall() {
 		SELF_PHONE_NUMBER = getSelfPhoneNumber();
 		SmsManager smsManager = SmsManager.getDefault();
@@ -498,28 +490,6 @@ public class WaveformActivity extends Activity implements
 		Log.v("Waveform", "Emergency  ");
 		mSMSSended = true;
 	}
-
-	Runnable mUploadRunnable = new Runnable() {
-		public void run() {
-
-			String uri = "http://140.114.14.63/httpPost.php";
-			int FileCount = mReceivedDataSaver.getFileCount();
-
-			if (Environment.getExternalStorageState().equals(
-					Environment.MEDIA_MOUNTED)) {
-				for (int i = 1; i < FileCount; i++) {
-					mFile[i - 1] = mReceivedDataSaver.getFile(i);
-					mUploadFile.uploadFile(mFile[i - 1], uri);
-				}
-				mReceivedDataSaver.setFileCount(1);
-				mRateRefreshHandler.postDelayed(this, mUploadPeriod);
-			} else {
-				Toast.makeText(WaveformActivity.this, R.string.sdcarderror, 1)
-						.show();
-			}
-			Log.v("Waveform", "UploadFileRunnable");
-		}
-	};
 
 	/**
 	 * user Handler to send message to the Thread that creates this Handler.

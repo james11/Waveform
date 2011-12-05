@@ -8,11 +8,8 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Picture;
 import android.os.Handler;
-import android.text.InputFilter.LengthFilter;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.ImageView;
 
 public class WaveformView extends ImageView {
