@@ -31,7 +31,7 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 
 	private int mUpdatePeriod = 20;
 
-	private int mUpdateSpeed = 30;
+	private int mPlotingSpeed = 30;
 
 	private RefreshThread mRefreshThread;
 	private ArrayList<DataSet> mDataSets;
@@ -132,7 +132,7 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 							/ (float) mUpdatePeriod;
 					for (int i = 0; i < mDataSets.size(); i++) {
 						int[] value = mAdapter.getCurrentData(i,
-								(int) (intputCount * mUpdateSpeed));
+								(int) (intputCount * mPlotingSpeed));
 						mDataSets.get(i).pushData(value);
 					}
 				}
@@ -180,7 +180,10 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 			int range = upperBound - lowerBound;
 			float deltaX = (float) width / (float) size;
 			float deltaY = (float) height / (float) range;
-			float base = height / 2;
+
+			// Adjust plotting base and deltaY here (Tablet +200 , SmartPhone
+			// +100)
+			float base = (height / 2) + 100;
 
 			Paint paint = new Paint();
 			paint.setColor(paintColor);
@@ -191,10 +194,11 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 			int y = 0;
 			if (iter.hasNext())
 				y = iter.next();
-			mmPath.moveTo(0, base - y * 2 * deltaY);
+			// And here
+			mmPath.moveTo(0, base - y * 4 * deltaY);
 			for (int j = 1; iter.hasNext(); j++) {
 				y = iter.next();
-				mmPath.lineTo(j * deltaX, base - y * 2 * deltaY);
+				mmPath.lineTo(j * deltaX, base - y * 4 * deltaY);
 			}
 		}
 
@@ -272,6 +276,7 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 		return picture;
 	}
 
+	// Plotting grid on layout and update drawing data on view
 	protected void drawCanvas(Canvas canvas) {
 		if (mGridPicture != null) {
 			mGridPicture.draw(canvas);

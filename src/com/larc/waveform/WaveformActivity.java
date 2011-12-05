@@ -97,7 +97,6 @@ public class WaveformActivity extends Activity implements
 
 	private TextView resulView;
 	private ProgressBar uploadbar;
-	// private UploadLogService logService;
 	private ReceivedDataSaver mReceivedDataSaver;
 	private String mfilenameText;
 
@@ -143,8 +142,8 @@ public class WaveformActivity extends Activity implements
 		mRateRefreshHandler = new Handler();
 		mRateRefreshHandler.post(mRateRefreshRunnable);
 
-		mUploadHandler = new Handler();
-		mUploadHandler.postDelayed(mUploadRunnable, mUploadPeriod);
+//		mUploadHandler = new Handler();
+//		mUploadHandler.postDelayed(mUploadRunnable, mUploadPeriod);
 
 		// create reusable layout parameter for adding view
 		LinearLayout.LayoutParams params = new LayoutParams(
@@ -481,7 +480,7 @@ public class WaveformActivity extends Activity implements
 		mEmergency = mDataReceiveService.emergencyEventCheck();
 		if (mEmergency == true && mConnectionCheck == true
 				&& mSMSSended == false) {
-			emergencyCall();
+//			emergencyCall();
 		} else {
 
 		}

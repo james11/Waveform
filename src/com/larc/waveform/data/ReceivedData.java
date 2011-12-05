@@ -9,7 +9,7 @@ public class ReceivedData {
 	private static final String TAG = "ReceivedData";
 	private static final boolean VERBOSE = true;
 
-	private static final int BUFFER_SIZE = 1024 * 40;
+	private static final int BUFFER_SIZE = 1024 * 400;
 	private static final byte DEFAULT_VALUE = (byte) 0x80;
 
 	private byte[] mDataBuffer = new byte[BUFFER_SIZE];

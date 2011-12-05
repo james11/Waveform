@@ -61,10 +61,6 @@ public class DataReceiveService extends BluetoothService {
 		mReceivedData.putData(length, data);
 	}
 
-	// public long getCountIntervalStart() {
-	// return mCountIntervalStart;
-	// }
-
 	public boolean emergencyEventCheck() {
 		return mReceivedData.emergencyEventCheck();
 	}
@@ -74,13 +70,31 @@ public class DataReceiveService extends BluetoothService {
 	}
 
 	public int[] getCurrentData(int channel, int preferedSize) {
-		// Log.v(TAG, "getCurrentData " + preferedSize);
+		Log.v(TAG, "getCurrentData " + preferedSize);
 		// int[] data = new int[preferedSize];
 		// Arrays.fill(data, new Random().nextInt() % 256);
 		// return data;
-		return mReceivedData.getLatestData(preferedSize, 1);
-	}
 
+		 int[] getData = new int[preferedSize];
+		 getData = mReceivedData.getLatestData(preferedSize, 1);
+		 int[] returnData = new int[preferedSize];
+		 int size = preferedSize;
+		 if (getData != null) {
+		 for (int i = 0; i < (size); i++) {
+		 if (i < 9)
+		 returnData[i] = getData[i];
+		 else {
+		 returnData[i] = (int) ((getData[i - 9] + getData[i - 8]
+		 + getData[i - 7] + getData[i - 6] + getData[i - 5]
+		 + getData[i - 4] + getData[i - 3] + getData[i - 2]
+		 + getData[i - 1] + getData[i]) / 10);
+		 }
+		 }
+		 }
+		 return returnData;
+
+//		return mReceivedData.getLatestData(preferedSize, 1);
+	}
 	/**** acturally used block ****/
 
 	//
