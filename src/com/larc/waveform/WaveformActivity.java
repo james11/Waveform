@@ -1,7 +1,5 @@
 package com.larc.waveform;
 
-import java.io.File;
-
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
@@ -21,14 +19,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.larc.bluetoothconnect.BluetoothService;
 import com.larc.bluetoothconnect.DeviceListActivity;
-import com.larc.waveform.data.DataFileManager;
-import com.larc.waveform.data.upload.WaveformUploadService;
 import com.larc.waveform.service.HealthDeviceBluetoothService;
 import com.larc.waveform.ui.widget.WaveformView;
 import com.larc.waveform.ui.widget.WaveformView.WaveformAdapter;
@@ -36,7 +31,10 @@ import com.larc.waveform.ui.widget.WaveformView.WaveformAdapter;
 public class WaveformActivity extends Activity implements
 		Button.OnClickListener {
 	private static final int DEFAULT_SIZE = 5000; // Screen pixels number
+	private static final int PLOTTING_OFFSET = 200; // Offset plotting line .
 	private static final int WAVEFORM_COUNT = 1;
+	private static final int HEART_RATE_UPDATE_PERIOD = 1000 * 10;
+	private static final int EMERGENCY_CHECH_PERIOD = 1000;
 
 	private static final int COLOR_TEXT_NORMAL = Color.GRAY;
 	private static final int COLOR_TEXT_SELECTED = 0xFFFF9900;
@@ -76,10 +74,7 @@ public class WaveformActivity extends Activity implements
 	private boolean mIsPlaying = true;
 
 	private Handler mRateRefreshHandler;
-	private int mRateUpdatePeriod = 10000;
-	private int mRate = 30;
-	private int mLast20SecRate = 0;
-	private int mLast10SecRate = 90;
+	private Handler mEmergencyCheckHandler;
 
 	private String EMERGENCYC_CONNECTION_PHONE_NUMBER = "0918183964";
 	private String SELF_PHONE_NUMBER;
@@ -89,17 +84,8 @@ public class WaveformActivity extends Activity implements
 	private boolean mConnectionCheck = false;
 	private boolean mSMSSended = false;
 
-	private Handler mUploadHandler;
-	private long mUploadPeriod = 1000 * 60 * 1 / 3;
-	private File[] mFile = new File[1024];
-
-	private TextView resulView;
-	private ProgressBar uploadbar;
-	private DataFileManager mReceivedDataSaver;
-	private String mfilenameText;
-
 	private BluetoothAdapter mBluetoothAdapter = null;
-	private HealthDeviceBluetoothService mDataReceiveService;
+	private HealthDeviceBluetoothService mHealthDeviceBluetoothService;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -139,9 +125,8 @@ public class WaveformActivity extends Activity implements
 
 		mRateRefreshHandler = new Handler();
 		mRateRefreshHandler.post(mRateRefreshRunnable);
-
-//		mUploadHandler = new Handler();
-//		mUploadHandler.postDelayed(mUploadRunnable, mUploadPeriod);
+		mEmergencyCheckHandler = new Handler();
+		mEmergencyCheckHandler.post(mEmergencyCheckRunnable);
 
 		// create reusable layout parameter for adding view
 		LinearLayout.LayoutParams params = new LayoutParams(
@@ -166,22 +151,13 @@ public class WaveformActivity extends Activity implements
 
 	Runnable mRateRefreshRunnable = new Runnable() {
 		public void run() {
-			energencyEventCheck();
-			mRate = getRate();
-			// Ignore error count , when heart rate count during 1 min >= 150
-			// or <= 50
-			int deltaRate = java.lang.Math.abs(mRate - mLast10SecRate);
-			if (deltaRate >= 40) {
-				mRate = mLast10SecRate;
-			}
-			Log.v("Waveform", "mRate = " + mRate);
+			int Rate = getHeartRate();
+			int deltaRate = getDeltaRate();
 
-			int Rate = (4 * mRate + 3 * mLast10SecRate + 2 * mLast20SecRate) / 9;
 			for (int i = 0; i < WAVEFORM_COUNT; i++) {
-
-				if ((mRate >= 100)) {
-					if ((mRate >= 110)) {
-						if ((mRate >= 130)) {
+				if ((Rate >= 100) || deltaRate >= 45) {
+					if ((Rate >= 125) || deltaRate >= 60) {
+						if ((Rate >= 140) || deltaRate >= 70) {
 							mTextChannelNameArray[i]
 									.setTextColor(RATE_140_COLOR);
 						}
@@ -191,18 +167,19 @@ public class WaveformActivity extends Activity implements
 				} else {
 					mTextChannelNameArray[i].setTextColor(SAFE_RATE_COLOR);
 				}
-
 				mTextChannelNameArray[i].setText("ECG Channel"
 						+ "\nHeart Rate = " + Rate + " /min");
 			}
-			mLast20SecRate = mLast10SecRate;
-			mLast10SecRate = mRate;
-			mRateRefreshHandler.postDelayed(this, mRateUpdatePeriod);
+			mRateRefreshHandler.postDelayed(this, HEART_RATE_UPDATE_PERIOD);
 		}
 	};
 
-	public int getRate() {
-		return mDataReceiveService.getHeartRate();
+	public int getHeartRate() {
+		return mHealthDeviceBluetoothService.getHeartRate();
+	}
+
+	public int getDeltaRate() {
+		return mHealthDeviceBluetoothService.getDeltaRate();
 	}
 
 	@Override
@@ -219,8 +196,8 @@ public class WaveformActivity extends Activity implements
 	@Override
 	public void onStop() {
 		super.onStop();
-		if (mDataReceiveService != null) {
-			mDataReceiveService.stop();
+		if (mHealthDeviceBluetoothService != null) {
+			mHealthDeviceBluetoothService.stop();
 		}
 		stopDrawing();
 	};
@@ -251,7 +228,6 @@ public class WaveformActivity extends Activity implements
 		default:
 			break;
 		}
-
 	}
 
 	private void refreshSignalButtonAndText() {
@@ -313,15 +289,22 @@ public class WaveformActivity extends Activity implements
 	public void resetWaveformViewData() {
 		for (int i = 0; i < mWaveformArray.length; i++) {
 			mWaveformArray[i].removeAllDataSet();
-			mWaveformArray[i].createNewDataSet(DEFAULT_SIZE, 1000, 0, 100);
+			mWaveformArray[i].createNewDataSet(DEFAULT_SIZE, 1000, 0,
+					PLOTTING_OFFSET);
 			mWaveformArray[i].setLineColor(0, LINE_COLOR_ARRAY[i]);
 		}
 	}
 
+	/**
+	 * Override "WaveformAdapter" in "WaveformView.java" to have
+	 * "getCurrentData()" function , which will return "getCurrentData()" in
+	 * "HealthDeviceBluetoothService.java" .
+	 **/
 	private WaveformAdapter mWaveformAdapter = new WaveformAdapter() {
 		@Override
 		public int[] getCurrentData(int set, int preferedSize) {
-			return mDataReceiveService.getCurrentData(mSignal, preferedSize);
+			return mHealthDeviceBluetoothService.getCurrentData(mSignal,
+					preferedSize);
 		}
 	};
 
@@ -447,19 +430,34 @@ public class WaveformActivity extends Activity implements
 		// Attempt to connect to the device
 		BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(macAddress);
 		setupConnect();
-		mDataReceiveService.connect(device, secure);
+		mHealthDeviceBluetoothService.connect(device, secure);
 	}
 
 	private void setupConnect() {
 		// Initialize the DataReceiveService to perform bluetooth connections if
 		// no DataReceive source .
-		if (mDataReceiveService == null) {
-			mDataReceiveService = HealthDeviceBluetoothService.getInstance(this);
-			mDataReceiveService.setHandler(mBluetoothHandler);
-			mDataReceiveService.start();
+		if (mHealthDeviceBluetoothService == null) {
+			mHealthDeviceBluetoothService = HealthDeviceBluetoothService
+					.getInstance(this);
+			mHealthDeviceBluetoothService.setHandler(mBluetoothHandler);
+			mHealthDeviceBluetoothService.start();
 		}
 
 	}
+
+	/** These functions below are for emergency SMS message sending . **/
+	Runnable mEmergencyCheckRunnable = new Runnable() {
+		public void run() {
+			mEmergency = mHealthDeviceBluetoothService.onHeartBeatStop();
+			if (mEmergency == true && mSMSSended == false && mConnectionCheck) {
+				// emergencyCall();
+				Log.v("Waveform", "Waveform detect emergency event");
+			} else {
+
+			}
+			mRateRefreshHandler.postDelayed(this, EMERGENCY_CHECH_PERIOD);
+		}
+	};
 
 	private String getSelfPhoneNumber() {
 		TelephonyManager phoneManager = (TelephonyManager) getApplicationContext()
@@ -467,16 +465,6 @@ public class WaveformActivity extends Activity implements
 		mSelfPhoneNumber = phoneManager.getLine1Number();
 		Log.v("Waveform", "PhoneNumberGet = " + mSelfPhoneNumber);
 		return mSelfPhoneNumber;
-	}
-
-	private void energencyEventCheck() {
-//		mEmergency = mDataReceiveService.emergencyEventCheck();
-//		if (mEmergency == true && mConnectionCheck == true
-//				&& mSMSSended == false) {
-////			emergencyCall();
-//		} else {
-//
-//		}
 	}
 
 	private void emergencyCall() {
@@ -487,96 +475,7 @@ public class WaveformActivity extends Activity implements
 		smsManager.sendTextMessage(EMERGENCYC_CONNECTION_PHONE_NUMBER, null,
 				SMS_MESSEGE_CONTENT + " from " + SELF_PHONE_NUMBER,
 				pendingIntent, null);
-		Log.v("Waveform", "Emergency  ");
 		mSMSSended = true;
 	}
 
-	/**
-	 * user Handler to send message to the Thread that creates this Handler.
-	 */
-	// private Handler handler = new Handler() {
-	// @Override
-	// public void handleMessage(Message msg) {
-	// // get uploading progress report
-	// int length = msg.getData().getInt("size");
-	// uploadbar.setProgress(length);
-	// float num = (float) uploadbar.getProgress()
-	// / (float) uploadbar.getMax();
-	// int result = (int) (num * 100);
-	// // set report result
-	// resulView.setText(result + "%");
-	// // uploading success
-	// if (uploadbar.getProgress() == uploadbar.getMax()) {
-	// Toast.makeText(WaveformActivity.this, R.string.success, 1)
-	// .show();
-	// }
-	// }
-	// };
-
-	/**
-	 * Create a Threat to uploading files. use Handler to avoid UI Thread ANR
-	 * error.
-	 * 
-	 * @param final uploadFile
-	 */
-	// private void uploadFile(final File uploadFile) {
-	// new Thread(new Runnable() {
-	// @Override
-	// public void run() {
-	// try {
-	// // set maximum length of files
-	// uploadbar.setMax((int) uploadFile.length());
-	// // Check if file has been uploaded before
-	// String souceid = logService.getBindId(uploadFile);
-	// // set header
-	// String head = "Content-Length=" + uploadFile.length()
-	// + ";filename=" + uploadFile.getName()
-	// + ";sourceid=" + (souceid == null ? "" : souceid)
-	// + "/r/n";
-	// // Create socket an IOstream
-	// Socket socket = new Socket("192.168.1.100", 7878);
-	// OutputStream outStream = socket.getOutputStream();
-	// outStream.write(head.getBytes());
-	//
-	// PushbackInputStream inStream = new PushbackInputStream(
-	// socket.getInputStream());
-	// // get id and position of byte[]
-	// String response = StreamTool.readLine(inStream);
-	// String[] items = response.split(";");
-	// String responseid = items[0].substring(items[0]
-	// .indexOf("=") + 1);
-	// String position = items[1].substring(items[1].indexOf("=") + 1);
-	// // if file has not been uploaded before , create a bindID in
-	// // database
-	// if (souceid == null) {
-	// logService.save(responseid, uploadFile);
-	// }
-	// RandomAccessFile fileOutStream = new RandomAccessFile(
-	// uploadFile, "r");
-	// fileOutStream.seek(Integer.valueOf(position));
-	// byte[] buffer = new byte[1024];
-	// int len = -1;
-	// // initialize ªø¶Ç data length
-	// int length = Integer.valueOf(position);
-	// while ((len = fileOutStream.read(buffer)) != -1) {
-	// outStream.write(buffer, 0, len);
-	// // set data length
-	// length += len;
-	// Message msg = new Message();
-	// msg.getData().putInt("size", length);
-	// handler.sendMessage(msg);
-	// }
-	// fileOutStream.close();
-	// outStream.close();
-	// inStream.close();
-	// socket.close();
-	// // delete data after uploading has done
-	// if (length == uploadFile.length())
-	// logService.delete(uploadFile);
-	// } catch (Exception e) {
-	// e.printStackTrace();
-	// }
-	// }
-	// }).start();
-	// }
 }

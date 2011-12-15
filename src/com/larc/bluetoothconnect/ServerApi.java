@@ -15,46 +15,47 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
 public class ServerApi {
-	
+
 	private static final String SERVER_CHARSET = "BIG5";
-	
-	private static final String API_UPLOAD_URL = "http://192.168.0.42/phpBB3/Upload/upload_ok.php";
+
+	private static final String API_UPLOAD_URL = "http://140.114.14.54/phpBB3/ECGServer/PHPCode/upload_ok.php";
 	private static final String API_UPLOAD_FILE = "ufile";
 	private static final String API_UPLOAD_NAME = "uname";
 	private static final String API_UPLOAD_ADDRESS = "uaddress";
 
-	public static String uploadFile(String name, String address, File file){
+	public static String uploadFile(String name, String address, File file) {
 		String response = null;
 		try {
 			DefaultHttpClient httpClient = new DefaultHttpClient();
-			
+
 			HttpPost httpPost = new HttpPost(API_UPLOAD_URL);
-			
-			MultipartEntity multipartEntity = new MultipartEntity(); 
-			
+
+			MultipartEntity multipartEntity = new MultipartEntity();
+
 			multipartEntity.addPart(API_UPLOAD_NAME, new StringBody(name));
-			multipartEntity.addPart(API_UPLOAD_ADDRESS, new StringBody(address));
+			multipartEntity
+					.addPart(API_UPLOAD_ADDRESS, new StringBody(address));
 			multipartEntity.addPart(API_UPLOAD_FILE, new FileBody(file));
-			
+
 			httpPost.setEntity(multipartEntity);
-			
+
 			HttpResponse httpResponse = httpClient.execute(httpPost);
-			
-			if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK){
-				
-				response = EntityUtils.toString(httpResponse.getEntity(), SERVER_CHARSET);
+
+			if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+
+				response = EntityUtils.toString(httpResponse.getEntity(),
+						SERVER_CHARSET);
 			} else {
-				//other HTTP status. For example: 404 file not found
+				// other HTTP status. For example: 404 file not found
 			}
-			
+
 		} catch (FileNotFoundException e) {
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		
+
 		return response;
 	}
 }

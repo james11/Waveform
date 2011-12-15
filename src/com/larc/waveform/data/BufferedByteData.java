@@ -1,30 +1,44 @@
 package com.larc.waveform.data;
 
-
 public class BufferedByteData {
+	BufferedByteData() {
+		this(BUFFER_SIZE);
+	}
 
-//	private static final String TAG = "BufferedByteData";
-//	private static final boolean VERBOSE = true;
+	public BufferedByteData(int bufferSize) {
+		// TODO Auto-generated constructor stub
+		mDataBuffer = new byte[bufferSize];
+	}
+
+	// private static final String TAG = "BufferedByteData";
+	// private static final boolean VERBOSE = true;
 
 	private static final int BUFFER_SIZE = 1024 * 400;
 
-	private byte[] mDataBuffer = new byte[BUFFER_SIZE];
+	// private byte[] mDataBuffer = new byte[BUFFER_SIZE];
 
 	private int mPointer = 0;
 	private int mGetPointer = 0;
 
 	public boolean mEmergencyEvent = false;
 
+	public final byte[] mDataBuffer;
+
+	/**
+	 * Write the received data (which are from Bluetooth Antenna) into
+	 * mDataBuffer .
+	 **/
 	public synchronized void write(int length, byte[] data) {
 
 		int currentPosition = 0;
 		currentPosition = mPointer;
 
+		// Check if Buffer us full .
 		if (currentPosition + length <= BUFFER_SIZE) {
-			// if mDataBuffer is full , save data to files and reset
-			// mDataBuffer to null .
+
 		} else {
 			onBufferFull(mDataBuffer, 0, BUFFER_SIZE);
+			// reset Buffer's pointer .
 			mPointer = 0;
 			mGetPointer = 0;
 			currentPosition = 0;
@@ -38,6 +52,7 @@ public class BufferedByteData {
 		mPointer += length;
 	}
 
+	/** Sample the data in Buffer and return the sampling . **/
 	public synchronized int[] readSampledData(int sampleSize) {
 
 		int[] data = null;
@@ -49,12 +64,14 @@ public class BufferedByteData {
 		end = (end + start) / 2;
 		avaliableSize = end - start;
 
+		// return null to in case of error .
 		if (avaliableSize <= 0 || start >= BUFFER_SIZE) {
 			mGetPointer = 0;
 			return null;
 		} else {
 			data = new int[avaliableSize / sampleSize];
 			int j = 0;
+			// Be care of the variables in this for() . (count them carefully)
 			for (int i = 0; i <= avaliableSize - sampleSize; i += sampleSize) {
 				// Convert Data form byte to integer .
 				data[j] = (int) (mDataBuffer[start + i] & 0xFF);
@@ -65,8 +82,10 @@ public class BufferedByteData {
 
 		return data;
 	}
-	
-	protected void onBufferFull(byte[] bufferData, final int offset, final int length){
-		
+
+	/** Do different function under different case when Buffer is full . **/
+	protected void onBufferFull(byte[] bufferData, final int offset,
+			final int length) {
+
 	}
 }

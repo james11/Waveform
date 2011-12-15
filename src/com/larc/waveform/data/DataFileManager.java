@@ -12,11 +12,9 @@ import java.util.Date;
 
 import android.os.Environment;
 
-import com.larc.waveform.WaveformActivity;
 import com.larc.waveform.WaveformApplication;
 import com.larc.waveform.data.upload.UploadTask;
 import com.larc.waveform.data.upload.WaveformUploadService;
-import com.larc.waveform.service.HealthDeviceBluetoothService;
 
 public class DataFileManager {
 	private static final String OUTPUT_FILE_PATH = "/Larc/Waveform/";
@@ -36,13 +34,14 @@ public class DataFileManager {
 			return buffer.array();
 		}
 	}
+
 	public final ArrayList<File> mSavedFileList = new ArrayList<File>();
-	private String mId="xxx";
-	private String mName="Larc";
-	private String mPhoneNumber="09xxxxxxxx";
-	
-	public static DataFileManager getInstance(){
-		if (sInstance == null){
+	private String mId = "xxx";
+	private String mName = "Larc";
+	private String mPhoneNumber = "09xxxxxxxx";
+
+	public static DataFileManager getInstance() {
+		if (sInstance == null) {
 			sInstance = new DataFileManager();
 		}
 		return sInstance;
@@ -52,7 +51,7 @@ public class DataFileManager {
 			final int length) {
 		final byte[] data = Arrays.copyOfRange(inputData, offset, offset
 				+ length);
-		
+
 		Thread thread = new Thread() {
 			@Override
 			public void run() {
@@ -67,7 +66,8 @@ public class DataFileManager {
 				String mfileName = generateFileName(date) + ".LaRC.txt";
 				File dir = Environment.getExternalStorageDirectory();
 				String dirPath = dir + OUTPUT_FILE_PATH;
-				String fullPath = dir.getAbsolutePath() + OUTPUT_FILE_PATH + mfileName;
+				String fullPath = dir.getAbsolutePath() + OUTPUT_FILE_PATH
+						+ mfileName;
 				File dirFile = new File(dirPath);
 				File outputFile = new File(fullPath);
 				try {
@@ -102,18 +102,20 @@ public class DataFileManager {
 		thread.start();
 
 	}
-	
-	protected void onFileSaved(File savedFile){
+
+	protected void onFileSaved(File savedFile) {
 		mSavedFileList.add(savedFile);
-		if (mSavedFileList.size()>2){
+		if (mSavedFileList.size() > 2) {
 			uploadSavedFiles();
 		}
 	}
 
 	private void uploadSavedFiles() {
-		for(int i=0; i<mSavedFileList.size(); i++){
+		for (int i = 0; i < mSavedFileList.size(); i++) {
 			File file = mSavedFileList.get(i);
-			WaveformUploadService.startUploadData(WaveformApplication.getInstance(), new UploadTask(file, mId, mName, mPhoneNumber));
+			WaveformUploadService.startUploadData(WaveformApplication
+					.getInstance(), new UploadTask(file, mId, mName,
+					mPhoneNumber));
 			mSavedFileList.clear();
 		}
 	}
@@ -123,16 +125,16 @@ public class DataFileManager {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		return dateFormat.format(date);
 	}
-	
-	public void setId(String id){
+
+	public void setId(String id) {
 		mId = id;
 	}
-	
-	public void setName(String name){
+
+	public void setName(String name) {
 		mName = name;
 	}
-	
-	public void setPhoneNumber(String phoneNumber){
+
+	public void setPhoneNumber(String phoneNumber) {
 		mPhoneNumber = phoneNumber;
 	}
 }
