@@ -1,17 +1,12 @@
 package com.larc.waveform;
 
 import android.app.Activity;
-import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.telephony.SmsManager;
-import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -126,7 +121,7 @@ public class WaveformActivity extends Activity implements
 		mRateRefreshHandler = new Handler();
 		mRateRefreshHandler.post(mRateRefreshRunnable);
 		mEmergencyCheckHandler = new Handler();
-		mEmergencyCheckHandler.post(mEmergencyCheckRunnable);
+		// mEmergencyCheckHandler.post(mEmergencyCheckRunnable);
 
 		// create reusable layout parameter for adding view
 		LinearLayout.LayoutParams params = new LayoutParams(
@@ -446,36 +441,37 @@ public class WaveformActivity extends Activity implements
 	}
 
 	/** These functions below are for emergency SMS message sending . **/
-	Runnable mEmergencyCheckRunnable = new Runnable() {
-		public void run() {
-			mEmergency = mHealthDeviceBluetoothService.onHeartBeatStop();
-			if (mEmergency == true && mSMSSended == false && mConnectionCheck) {
-				// emergencyCall();
-				Log.v("Waveform", "Waveform detect emergency event");
-			} else {
-
-			}
-			mRateRefreshHandler.postDelayed(this, EMERGENCY_CHECH_PERIOD);
-		}
-	};
-
-	private String getSelfPhoneNumber() {
-		TelephonyManager phoneManager = (TelephonyManager) getApplicationContext()
-				.getSystemService(Context.TELEPHONY_SERVICE);
-		mSelfPhoneNumber = phoneManager.getLine1Number();
-		Log.v("Waveform", "PhoneNumberGet = " + mSelfPhoneNumber);
-		return mSelfPhoneNumber;
-	}
-
-	private void emergencyCall() {
-		SELF_PHONE_NUMBER = getSelfPhoneNumber();
-		SmsManager smsManager = SmsManager.getDefault();
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(
-				WaveformActivity.this, 0, new Intent(), 0);
-		smsManager.sendTextMessage(EMERGENCYC_CONNECTION_PHONE_NUMBER, null,
-				SMS_MESSEGE_CONTENT + " from " + SELF_PHONE_NUMBER,
-				pendingIntent, null);
-		mSMSSended = true;
-	}
+	// Runnable mEmergencyCheckRunnable = new Runnable() {
+	// public void run() {
+	// mEmergency = mHealthDeviceBluetoothService.onHeartBeatStop();
+	// if (mEmergency == true && mSMSSended == false && mConnectionCheck) {
+	// // emergencyCall();
+	// Log.v("Waveform", "Waveform detect emergency event");
+	// } else {
+	//
+	// }
+	// mRateRefreshHandler.postDelayed(this, EMERGENCY_CHECH_PERIOD);
+	// }
+	// };
+	//
+	// private String getSelfPhoneNumber() {
+	// TelephonyManager phoneManager = (TelephonyManager)
+	// getApplicationContext()
+	// .getSystemService(Context.TELEPHONY_SERVICE);
+	// mSelfPhoneNumber = phoneManager.getLine1Number();
+	// Log.v("Waveform", "PhoneNumberGet = " + mSelfPhoneNumber);
+	// return mSelfPhoneNumber;
+	// }
+	//
+	// private void emergencyCall() {
+	// SELF_PHONE_NUMBER = getSelfPhoneNumber();
+	// SmsManager smsManager = SmsManager.getDefault();
+	// PendingIntent pendingIntent = PendingIntent.getBroadcast(
+	// WaveformActivity.this, 0, new Intent(), 0);
+	// smsManager.sendTextMessage(EMERGENCYC_CONNECTION_PHONE_NUMBER, null,
+	// SMS_MESSEGE_CONTENT + " from " + SELF_PHONE_NUMBER,
+	// pendingIntent, null);
+	// mSMSSended = true;
+	// }
 
 }

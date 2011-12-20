@@ -1,23 +1,36 @@
 package com.larc.waveform.service;
 
-import android.app.Activity;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import com.larc.waveform.WaveformApplication;
+import com.larc.waveform.data.DataFileManager;
 
-public class EmergencyCallService extends Activity {
+public class EmergencyCallService {
 
-	private String EMERGENCYC_CONNECTION_PHONE_NUMBER = "0972152898";
+	private static EmergencyCallService eInstance;
+
+	private String EMERGENCYC_CONNECTION_PHONE_NUMBER = "0916961459";
 	private String SELF_PHONE_NUMBER;
 	private String SMS_MESSEGE_CONTENT = "Emergency";
 	private String mSelfPhoneNumber;
 	private boolean mSMSSended = false;
 
+	private Context mContext;
+
+	public static EmergencyCallService getInstance() {
+		if (eInstance == null) {
+			eInstance = new EmergencyCallService();
+		}
+		return eInstance;
+	}
+
 	private String getSelfPhoneNumber() {
-		TelephonyManager phoneManager = (TelephonyManager) getApplicationContext()
+		TelephonyManager phoneManager = (TelephonyManager) mContext
 				.getSystemService(Context.TELEPHONY_SERVICE);
 		mSelfPhoneNumber = phoneManager.getLine1Number();
 		Log.v("Waveform", "PhoneNumberGet = " + mSelfPhoneNumber);
@@ -27,7 +40,7 @@ public class EmergencyCallService extends Activity {
 	private void emergencyCall() {
 		SELF_PHONE_NUMBER = getSelfPhoneNumber();
 		SmsManager smsManager = SmsManager.getDefault();
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
 				new Intent(), 0);
 		smsManager.sendTextMessage(EMERGENCYC_CONNECTION_PHONE_NUMBER, null,
 				SMS_MESSEGE_CONTENT + " from " + SELF_PHONE_NUMBER,
@@ -35,73 +48,19 @@ public class EmergencyCallService extends Activity {
 		mSMSSended = true;
 	}
 
-	void emergencyEventCheck() {
+	public void emergencyEventCheck() {
 		if (mSMSSended == false) {
-			Log.v("Waveform", "Emergency  ");
-			// emergencyCall();
-		} else {
-
+			Thread thread = new Thread() {
+				@Override
+				public void run() {
+					mContext = WaveformApplication.getInstance();
+					Log.v("EmergencyCallService",
+							"Waveform detect emergency event");
+					// emergencyCall();
+					mSMSSended = true;
+				}
+			};
+			thread.start();
 		}
 	}
-
-	// //
-	// // private void sendSMS(String phoneNumber, String message) {
-	// // String SENT = "SMS_SENT";
-	// // String DELIVERED = "SMS_DELIVERED";
-	// //
-	// // PendingIntent sentPI = PendingIntent.getBroadcast(this, 0, new Intent(
-	// // SENT), 0);
-	// //
-	// // PendingIntent deliveredPI = PendingIntent.getBroadcast(this, 0,
-	// // new Intent(DELIVERED), 0);
-	// //
-	// // // ---when the SMS has been sent---
-	// // registerReceiver(new BroadcastReceiver() {
-	// // @Override
-	// // public void onReceive(Context arg0, Intent arg1) {
-	// // switch (getResultCode()) {
-	// // case Activity.RESULT_OK:
-	// // Toast.makeText(getBaseContext(), "SMS sent",
-	// // Toast.LENGTH_SHORT).show();
-	// // break;
-	// // case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-	// // Toast.makeText(getBaseContext(), "Generic failure",
-	// // Toast.LENGTH_SHORT).show();
-	// // break;
-	// // case SmsManager.RESULT_ERROR_NO_SERVICE:
-	// // Toast.makeText(getBaseContext(), "No service",
-	// // Toast.LENGTH_SHORT).show();
-	// // break;
-	// // case SmsManager.RESULT_ERROR_NULL_PDU:
-	// // Toast.makeText(getBaseContext(), "Null PDU",
-	// // Toast.LENGTH_SHORT).show();
-	// // break;
-	// // case SmsManager.RESULT_ERROR_RADIO_OFF:
-	// // Toast.makeText(getBaseContext(), "Radio off",
-	// // Toast.LENGTH_SHORT).show();
-	// // break;
-	// // }
-	// // }
-	// // }, new IntentFilter(SENT));
-	// //
-	// // // ---when the SMS has been delivered---
-	// // registerReceiver(new BroadcastReceiver() {
-	// // @Override
-	// // public void onReceive(Context arg0, Intent arg1) {
-	// // switch (getResultCode()) {
-	// // case Activity.RESULT_OK:
-	// // Toast.makeText(getBaseContext(), "SMS delivered",
-	// // Toast.LENGTH_SHORT).show();
-	// // break;
-	// // case Activity.RESULT_CANCELED:
-	// // Toast.makeText(getBaseContext(), "SMS not delivered",
-	// // Toast.LENGTH_SHORT).show();
-	// // break;
-	// // }
-	// // }
-	// // }, new IntentFilter(DELIVERED));
-	// //
-	// // SmsManager sms = SmsManager.getDefault();
-	// // sms.sendTextMessage(phoneNumber, null, message, sentPI, deliveredPI);
-	// // }
 }

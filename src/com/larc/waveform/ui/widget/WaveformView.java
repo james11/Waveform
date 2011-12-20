@@ -30,7 +30,7 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 													// .
 	private static final int DEFAULT_PAINT_COLOR = 0xFFFF0000;
 	private static final int DEFAULT_LINE_WIDTH = 3;
-	private static final int GRID_SIZE = 11;
+	private static final int GRID_SIZE = 21;
 	private static final int GRID_COLOR = 0xFFCCCCCC;
 
 	private int mUpdatePeriod = 20;
@@ -349,11 +349,11 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 		// draw background grid line
 
 		/** Print Threshold line . **/
-		Paint paintT = new Paint();
-		paintT.setColor(0xFF00CC00);
-		paintT.setStrokeWidth(3);
-		paintT.setStyle(Style.STROKE);
-		canvas.drawLine(0, height / 2 - 50, width, height / 2 - 50, paintT);
+		// Paint paintT = new Paint();
+		// paintT.setColor(0xFF00CC00);
+		// paintT.setStrokeWidth(3);
+		// paintT.setStyle(Style.STROKE);
+		// canvas.drawLine(0, height / 2 - 50, width, height / 2 - 50, paintT);
 
 		Paint paint = new Paint();
 		paint.setColor(GRID_COLOR);

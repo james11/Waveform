@@ -1,9 +1,9 @@
 package com.larc.waveform.service;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.larc.bluetoothconnect.BluetoothService;
-import com.larc.waveform.WaveformActivity;
 import com.larc.waveform.data.DataFileManager;
 import com.larc.waveform.data.EcgData;
 
@@ -16,8 +16,7 @@ public class HealthDeviceBluetoothService extends BluetoothService implements
 
 	private static HealthDeviceBluetoothService mInstance;
 
-	public EmergencyCallService mEmergencyCallService;
-	public WaveformActivity mWaveformActivity;
+	private EmergencyCallService mEmergencyCallService;
 	private DataFileManager mDataFileManager;
 	private final EcgData mEcgData;
 
@@ -26,6 +25,9 @@ public class HealthDeviceBluetoothService extends BluetoothService implements
 		mInstance = this;
 		mEcgData = new EcgData();
 		mEcgData.setListener(this);
+
+		mEmergencyCallService = EmergencyCallService.getInstance();
+
 		mDataFileManager = DataFileManager.getInstance();
 		mDataFileManager.setId("");
 		mDataFileManager.setName("");
@@ -95,16 +97,15 @@ public class HealthDeviceBluetoothService extends BluetoothService implements
 
 	/** Function used by listener in "EcgData.java" . **/
 	@Override
-	public boolean onHeartBeatStop() {
-		// TODO: send sms message?
-		return mEcgData.onHeartBeatStop();
-
+	public void onHeartBeatStop() {
+		// send emergency SMS .
+		mEmergencyCallService.emergencyEventCheck();
 	}
 
 	/** Function used by listener in "EcgData.java" . **/
 	@Override
 	public void onEcgBufferFull(byte[] bufferData, int offset, int length) {
-		// save data
+		// save data .
 		mDataFileManager.saveData(bufferData, offset, length);
 	}
 

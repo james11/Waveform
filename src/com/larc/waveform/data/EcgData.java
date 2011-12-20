@@ -12,8 +12,7 @@ public class EcgData extends BufferedByteData {
 	// private static final boolean VERBOSE = true;
 
 	private static final int ECG_BUFFER_SIZE = 1024 * 499;
-	private static final int SATURATION_REGION = 15;
-	private static final int DETECTION_REGION_SIZA = 85;
+	private static final int SATURATION_REGION = 20;
 
 	private static final int BASE = 128;
 
@@ -25,6 +24,7 @@ public class EcgData extends BufferedByteData {
 	private long mLastPeakTime = 0;
 	private int mMaxData = 0;
 	private int mMinData = 255;
+	private int mDetectionRegionSize = 0;
 	private int mPeakCnt = 0;
 	private boolean mSaturation = false;
 	private boolean mIncrease = true;
@@ -39,15 +39,13 @@ public class EcgData extends BufferedByteData {
 	public int mHeartRate;
 	public EcgListener mListener;
 
-	private boolean mEmergency = false;
-
 	/**
 	 * Create an interface "EcgListener" which contain function
 	 * "onHeartBeatStop()" and "onEcgBufferFull()"
 	 **/
 
 	public interface EcgListener {
-		public boolean onHeartBeatStop();
+		public void onHeartBeatStop();
 
 		public void onEcgBufferFull(byte[] bufferData, int offset, int length);
 	}
@@ -60,8 +58,8 @@ public class EcgData extends BufferedByteData {
 			mRate = (mPeakCnt * 6) + 3;
 		}
 		Log.v(TAG, "mRate = " + mRate);
-		Log.v(TAG, "mMaxData = " + mMaxData);
-		Log.v(TAG, "mMinData = " + mMinData);
+		// Log.v(TAG, "mMaxData = " + mMaxData);
+		// Log.v(TAG, "mMinData = " + mMinData);
 
 		// In case of counting error at the beginning of peak value
 		// detecting .
@@ -73,7 +71,7 @@ public class EcgData extends BufferedByteData {
 		Log.v(TAG, "mRateCheck = " + mRate);
 
 		// Count the displayed HeartRate .
-		mHeartRate = (4 * mRate + 2 * mLast10SecRate + 1 * mLast20SecRate) / 7;
+		mHeartRate = (4 * mRate + 3 * mLast10SecRate + 2 * mLast20SecRate) / 9;
 
 		// Reset mPeakCnt for another new detection period .
 		mPeakCnt = 0;
@@ -159,16 +157,25 @@ public class EcgData extends BufferedByteData {
 			long CurrentTime = System.currentTimeMillis();
 			int PeakPeriod = (int) (CurrentTime - mLastPeakTime);
 			// Emergency detection .
-			if (PeakPeriod >= 2500 && mLastPeakTime > 0) {
-				mEmergency = true;
+			if (PeakPeriod >= 3000 && mLastPeakTime > 0) {
+				onHeartBeatStop();
 			}
+			int regionLowerBound = mMinData;
+			int regionUppererBound = mMaxData;
+
+			mDetectionRegionSize = 3 * (regionUppererBound - regionLowerBound) / 4;
 			// In case of counting continuous peak value in error , add another
 			// condition (delta time between two peak) to count #peak .
-			if ((data[i] & 0xFF) >= (mMaxData - DETECTION_REGION_SIZA)
+			if ((data[i] & 0xFF) >= (mMaxData - mDetectionRegionSize)
 					&& (mSlopZero == true) && (PeakPeriod >= 300)) {
 				mPeakCnt += 1;
 				Log.v(TAG, "HeartBeatCount");
 				mLastPeakTime = CurrentTime;
+			}
+			// Decrease detection region for more sensitive detection .
+			if ((PeakPeriod >= 1200 || PeakPeriod <= 500) && mLastPeakTime > 0) {
+				mMaxData = 160;
+				mMinData = 110;
 			}
 			mLastData[i] = data[i];
 			mLastIncrease = mIncrease;
@@ -191,8 +198,10 @@ public class EcgData extends BufferedByteData {
 	 * function "onHeartBeatStop()" in "HealthDeviceBluetoothService.java"(using
 	 * interface "EcgListener") to broadcast an emergency call .
 	 */
-	public boolean onHeartBeatStop() {
-		return mEmergency;
+	protected void onHeartBeatStop() {
+		if (mListener != null) {
+			mListener.onHeartBeatStop();
+		}
 	}
 
 	/**
