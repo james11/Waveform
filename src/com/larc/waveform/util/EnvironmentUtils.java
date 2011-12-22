@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 
+
 public class EnvironmentUtils {
 	private static final String KEY_USE_EXT_CACHE = "useExternalCache";
 	

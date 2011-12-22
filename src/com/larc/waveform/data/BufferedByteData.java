@@ -5,24 +5,17 @@ public class BufferedByteData {
 		this(BUFFER_SIZE);
 	}
 
-	public BufferedByteData(int bufferSize) {
-		// TODO Auto-generated constructor stub
+	BufferedByteData(int bufferSize) {
 		mDataBuffer = new byte[bufferSize];
 	}
 
 	// private static final String TAG = "BufferedByteData";
 	// private static final boolean VERBOSE = true;
 
-	private static final int BUFFER_SIZE = 1024 * 400;
-
-	// private byte[] mDataBuffer = new byte[BUFFER_SIZE];
-
+	private final byte[] mDataBuffer;
+	protected static int BUFFER_SIZE = 1024 * 400;
 	private int mPointer = 0;
 	private int mGetPointer = 0;
-
-	public boolean mEmergencyEvent = false;
-
-	public final byte[] mDataBuffer;
 
 	/**
 	 * Write the received data (which are from Bluetooth Antenna) into

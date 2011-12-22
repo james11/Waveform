@@ -5,8 +5,11 @@ import android.util.Log;
 public class EcgData extends BufferedByteData {
 
 	public EcgData() {
-		super(ECG_BUFFER_SIZE);
+		super(BufferedByteData.BUFFER_SIZE = ECG_BUFFER_SIZE);
 	}
+
+	private byte[] mDataBuffer = new byte[ECG_BUFFER_SIZE];
+	private byte[] mLastData = new byte[ECG_BUFFER_SIZE];
 
 	private static final String TAG = "EcgData";
 	// private static final boolean VERBOSE = true;
@@ -15,8 +18,6 @@ public class EcgData extends BufferedByteData {
 	private static final int SATURATION_REGION = 20;
 
 	private static final int BASE = 128;
-
-	private byte[] mLastData = new byte[ECG_BUFFER_SIZE];
 
 	private int mPointer = 0;
 	private int mGetPointer = 0;

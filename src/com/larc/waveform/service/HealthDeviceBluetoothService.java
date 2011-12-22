@@ -1,7 +1,6 @@
 package com.larc.waveform.service;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.larc.bluetoothconnect.BluetoothService;
 import com.larc.waveform.data.DataFileManager;
@@ -18,6 +17,7 @@ public class HealthDeviceBluetoothService extends BluetoothService implements
 
 	private EmergencyCallService mEmergencyCallService;
 	private DataFileManager mDataFileManager;
+	private final GPSLocation mGPSLocation;
 	private final EcgData mEcgData;
 
 	private HealthDeviceBluetoothService(Context context) {
@@ -25,6 +25,11 @@ public class HealthDeviceBluetoothService extends BluetoothService implements
 		mInstance = this;
 		mEcgData = new EcgData();
 		mEcgData.setListener(this);
+
+		mGPSLocation = GPSLocation.getInstance();
+		mGPSLocation.setHandler();
+		mGPSLocation.mLocationServiceHandler
+				.post(mGPSLocation.mLocationServiceRunnable);
 
 		mEmergencyCallService = EmergencyCallService.getInstance();
 
@@ -49,6 +54,14 @@ public class HealthDeviceBluetoothService extends BluetoothService implements
 	protected void onDataRead(int length, byte[] data) {
 		super.onDataRead(length, data);
 		mEcgData.write(length, data);
+	}
+
+	public double getLongitude() {
+		return mGPSLocation.getLongitude();
+	}
+
+	public double getLatitude() {
+		return mGPSLocation.getLatitude();
 	}
 
 	// return to WaveformActivity .
@@ -106,7 +119,7 @@ public class HealthDeviceBluetoothService extends BluetoothService implements
 	@Override
 	public void onEcgBufferFull(byte[] bufferData, int offset, int length) {
 		// save data .
-		mDataFileManager.saveData(bufferData, offset, length);
+		mDataFileManager.saveByteData(bufferData, offset, length);
 	}
 
 }

@@ -1,14 +1,13 @@
 package com.larc.waveform.service;
 
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+
 import com.larc.waveform.WaveformApplication;
-import com.larc.waveform.data.DataFileManager;
 
 public class EmergencyCallService {
 
@@ -50,17 +49,10 @@ public class EmergencyCallService {
 
 	public void emergencyEventCheck() {
 		if (mSMSSended == false) {
-			Thread thread = new Thread() {
-				@Override
-				public void run() {
-					mContext = WaveformApplication.getInstance();
-					Log.v("EmergencyCallService",
-							"Waveform detect emergency event");
-					// emergencyCall();
-					mSMSSended = true;
-				}
-			};
-			thread.start();
+			mContext = WaveformApplication.getInstance();
+			Log.v("EmergencyCallService", "Waveform detect emergency event");
+			// emergencyCall();
+			mSMSSended = true;
 		}
 	}
 }

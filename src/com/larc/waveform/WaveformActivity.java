@@ -3,8 +3,10 @@ package com.larc.waveform;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
@@ -19,6 +21,7 @@ import android.widget.Toast;
 
 import com.larc.bluetoothconnect.BluetoothService;
 import com.larc.bluetoothconnect.DeviceListActivity;
+import com.larc.waveform.service.GPSLocation;
 import com.larc.waveform.service.HealthDeviceBluetoothService;
 import com.larc.waveform.ui.widget.WaveformView;
 import com.larc.waveform.ui.widget.WaveformView.WaveformAdapter;
@@ -29,7 +32,6 @@ public class WaveformActivity extends Activity implements
 	private static final int PLOTTING_OFFSET = 200; // Offset plotting line .
 	private static final int WAVEFORM_COUNT = 1;
 	private static final int HEART_RATE_UPDATE_PERIOD = 1000 * 10;
-	private static final int EMERGENCY_CHECH_PERIOD = 1000;
 
 	private static final int COLOR_TEXT_NORMAL = Color.GRAY;
 	private static final int COLOR_TEXT_SELECTED = 0xFFFF9900;
@@ -63,7 +65,9 @@ public class WaveformActivity extends Activity implements
 	private Button mButtonPause;
 	private Button mButtonEEG;
 	private Button mButtonDBS;
-	private TextView mTextView;
+	private TextView mSignalTypeTextView;
+	private TextView mlongitudeTextView;
+	private TextView mlatitudeTextView;
 
 	private int mSignal = SIGNAL_EEG;
 	private boolean mIsPlaying = true;
@@ -81,6 +85,7 @@ public class WaveformActivity extends Activity implements
 
 	private BluetoothAdapter mBluetoothAdapter = null;
 	private HealthDeviceBluetoothService mHealthDeviceBluetoothService;
+	private GPSLocation mGPSLocationService;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -90,6 +95,7 @@ public class WaveformActivity extends Activity implements
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		setSignal(SIGNAL_EEG);
 		startDrawing();
+		// mGPSLocationService.locationService();
 	}
 
 	// Setup views and widgets at the first time the activity is created
@@ -99,15 +105,23 @@ public class WaveformActivity extends Activity implements
 		mButtonPause = (Button) findViewById(R.id.buttonPause);
 		mButtonEEG = (Button) findViewById(R.id.buttonEEG);
 		mButtonDBS = (Button) findViewById(R.id.buttonDBS);
-		mTextView = (TextView) findViewById(R.id.myTextView);
+		mSignalTypeTextView = (TextView) findViewById(R.id.myTextView);
+		mlongitudeTextView = (TextView) findViewById(R.id.mylongitudeTextView);
+		mlatitudeTextView = (TextView) findViewById(R.id.mylatitudeTextView);
 		mWaveformContainer = (LinearLayout) findViewById(R.id.waveformContainer);
 		mChannelNameContainer = (LinearLayout) findViewById(R.id.channelNameBlock);
 
 		// uploadbar = (ProgressBar) this.findViewById(R.id.uploadBar);
 		// resulView = (TextView) this.findViewById(R.id.result);
 
-		mTextView.setText("4-Channel DBS Signals");
-		mTextView.setTextColor(COLOR_TEXT_NORMAL);
+		mSignalTypeTextView.setText("1-Channel ECG Signal");
+		mSignalTypeTextView.setTextColor(COLOR_TEXT_NORMAL);
+
+		mlongitudeTextView.setText("longitude = ");
+		mlongitudeTextView.setTextColor(COLOR_TEXT_NORMAL);
+
+		mlatitudeTextView.setText("latitude = ");
+		mlatitudeTextView.setTextColor(COLOR_TEXT_NORMAL);
 
 		mButtonDBS.setTextColor(COLOR_TEXT_NORMAL);
 		mButtonEEG.setTextColor(COLOR_TEXT_NORMAL);
@@ -148,6 +162,8 @@ public class WaveformActivity extends Activity implements
 		public void run() {
 			int Rate = getHeartRate();
 			int deltaRate = getDeltaRate();
+			double longitude = getLongitude();
+			double latitude = getLatitude();
 
 			for (int i = 0; i < WAVEFORM_COUNT; i++) {
 				if ((Rate >= 100) || deltaRate >= 45) {
@@ -164,10 +180,29 @@ public class WaveformActivity extends Activity implements
 				}
 				mTextChannelNameArray[i].setText("ECG Channel"
 						+ "\nHeart Rate = " + Rate + " /min");
+
+				mTextChannelNameArray[i].setText("ECG Channel"
+						+ "\nHeart Rate = " + Rate + " /min");
+
+				mlongitudeTextView.setText("longitude = " + longitude);
+				mlongitudeTextView.setTextColor(COLOR_TEXT_NORMAL);
+
+				mlatitudeTextView.setText("latitude = " + latitude);
+				mlatitudeTextView.setTextColor(COLOR_TEXT_NORMAL);
+
 			}
 			mRateRefreshHandler.postDelayed(this, HEART_RATE_UPDATE_PERIOD);
 		}
+
 	};
+
+	private double getLongitude() {
+		return mHealthDeviceBluetoothService.getLongitude();
+	}
+
+	private double getLatitude() {
+		return mHealthDeviceBluetoothService.getLatitude();
+	}
 
 	public int getHeartRate() {
 		return mHealthDeviceBluetoothService.getHeartRate();
@@ -231,13 +266,15 @@ public class WaveformActivity extends Activity implements
 			mButtonDBS.setTextColor(COLOR_TEXT_SELECTED);
 			mButtonEEG.setTextColor(COLOR_TEXT_NORMAL);
 			mButtonPause.setTextColor(COLOR_TEXT_NORMAL);
-			mTextView.setText(TITLE_DBS);
+			// We still just have one channel ECG signal now .
+			// mSignalTypeTextView.setText(TITLE_DBS);
 			break;
 		case SIGNAL_EEG:
 			mButtonEEG.setTextColor(COLOR_TEXT_SELECTED);
 			mButtonDBS.setTextColor(COLOR_TEXT_NORMAL);
 			mButtonPause.setTextColor(COLOR_TEXT_NORMAL);
-			mTextView.setText(TITLE_EEG);
+			// We still just have one channel ECG signal now .
+			// mSignalTypeTextView.setText(TITLE_EEG);
 			break;
 		}
 	}
@@ -336,6 +373,9 @@ public class WaveformActivity extends Activity implements
 		case R.id.discoverable:
 			ensureDiscoverable();
 			return true;
+		case R.id.locationable:
+			ensureLocationable();
+			return true;
 		case R.id.quitAPP:
 			finish();
 			return true;
@@ -378,6 +418,17 @@ public class WaveformActivity extends Activity implements
 			discoverableIntent.putExtra(
 					BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
 			startActivity(discoverableIntent);
+		}
+	}
+
+	private void ensureLocationable() {
+		LocationManager status = (LocationManager) (this
+				.getSystemService(Context.LOCATION_SERVICE));
+		if (status.isProviderEnabled(LocationManager.GPS_PROVIDER)
+				|| status.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+		} else {
+			startActivity(new Intent(
+					android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
 		}
 	}
 

@@ -11,12 +11,16 @@ import java.util.Arrays;
 import java.util.Date;
 
 import android.os.Environment;
+import android.util.Log;
 
 import com.larc.waveform.WaveformApplication;
 import com.larc.waveform.data.upload.UploadTask;
 import com.larc.waveform.data.upload.WaveformUploadService;
 
 public class DataFileManager {
+
+	private static final String TAG = "DataFileManager";
+
 	private static final String OUTPUT_FILE_PATH = "/Larc/Waveform/";
 	private static DataFileManager sInstance;
 
@@ -47,7 +51,7 @@ public class DataFileManager {
 		return sInstance;
 	}
 
-	public void saveData(final byte[] inputData, final int offset,
+	public void saveByteData(final byte[] inputData, final int offset,
 			final int length) {
 		final byte[] data = Arrays.copyOfRange(inputData, offset, offset
 				+ length);
@@ -63,7 +67,7 @@ public class DataFileManager {
 				// }
 
 				Date date = new Date();
-				String mfileName = generateFileName(date) + ".LaRC.txt";
+				String mfileName = generateFileName(date) + ".ECG.txt";
 				File dir = Environment.getExternalStorageDirectory();
 				String dirPath = dir + OUTPUT_FILE_PATH;
 				String fullPath = dir.getAbsolutePath() + OUTPUT_FILE_PATH
@@ -103,10 +107,71 @@ public class DataFileManager {
 
 	}
 
+	public void saveDoubleData(final double[] inputData, final int offset,
+			final int length) {
+		final double[] data = Arrays.copyOfRange(inputData, offset, offset
+				+ length);
+
+		Thread thread = new Thread() {
+			@Override
+			public void run() {
+
+				StringBuilder builder = new StringBuilder(length * 12);
+				for (int i = 0; i < length; i++) {
+					builder.append(String.format("%f,", data[i]));
+				}
+
+				Date date = new Date();
+				String mfileName = generateFileName(date) + ".Location.txt";
+				File dir = Environment.getExternalStorageDirectory();
+				String dirPath = dir + OUTPUT_FILE_PATH;
+				String fullPath = dir.getAbsolutePath() + OUTPUT_FILE_PATH
+						+ mfileName;
+				File dirFile = new File(dirPath);
+				File outputFile = new File(fullPath);
+				try {
+					dirFile.mkdirs();
+					outputFile.createNewFile();
+				} catch (IOException e2) {
+					e2.printStackTrace();
+				}
+
+				DataFileHeader header = new DataFileHeader();
+				header.time = date.getTime();
+				header.type = 1;
+				header.length = data.length;
+
+				try {
+					FileOutputStream fos = new FileOutputStream(outputFile);
+					fos.write(builder.toString().getBytes());
+					fos.close();
+
+					onLocationFileSaved(outputFile);
+
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+
+		thread.start();
+
+	}
+
 	protected void onFileSaved(File savedFile) {
 		mSavedFileList.add(savedFile);
-		if (mSavedFileList.size() > 2) {
+		if (mSavedFileList.size() > 15) {
 			uploadSavedFiles();
+		}
+	}
+
+	protected void onLocationFileSaved(File savedFile) {
+		mSavedFileList.add(savedFile);
+		if (mSavedFileList.size() > 0) {
+			uploadSavedFiles();
+			Log.v(TAG, "uploadSavedFiles = ");
 		}
 	}
 

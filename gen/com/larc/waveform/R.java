@@ -37,17 +37,18 @@ public final class R {
         public static final int edit_text_out=0x7f07000d;
         public static final int in=0x7f07000c;
         public static final int insecure_connect_scan=0x7f070015;
+        public static final int locationable=0x7f070017;
         public static final int myTextView=0x7f070009;
+        public static final int mylatitudeTextView=0x7f07000b;
+        public static final int mylongitudeTextView=0x7f07000a;
         public static final int newDevices=0x7f070001;
         public static final int new_devices=0x7f070012;
         public static final int pairedDevices=0x7f070000;
         public static final int paired_devices=0x7f070010;
-        public static final int quitAPP=0x7f070017;
-        public static final int result=0x7f07000a;
+        public static final int quitAPP=0x7f070018;
         public static final int secure_connect_scan=0x7f070014;
         public static final int title_new_devices=0x7f070011;
         public static final int title_paired_devices=0x7f07000f;
-        public static final int uploadBar=0x7f07000b;
         public static final int waveformContainer=0x7f070004;
         public static final int zoomControl=0x7f070008;
     }
@@ -72,6 +73,7 @@ public final class R {
         public static final int filenotexsit=0x7f050015;
         public static final int hello=0x7f050000;
         public static final int insecure_connect=0x7f050012;
+        public static final int locationable=0x7f050018;
         public static final int none_found=0x7f050007;
         public static final int none_paired=0x7f050006;
         public static final int not_connected=0x7f05000f;
