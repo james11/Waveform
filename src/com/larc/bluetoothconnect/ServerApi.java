@@ -20,10 +20,12 @@ public class ServerApi {
 
 	private static final String API_UPLOAD_URL = "http://140.114.14.54/phpBB3/ECGServer/PHPCode/upload_ok.php";
 	private static final String API_UPLOAD_FILE = "ufile";
+	private static final String API_UPLOAD_ID = "uid";
 	private static final String API_UPLOAD_NAME = "uname";
 	private static final String API_UPLOAD_ADDRESS = "uaddress";
 
-	public static String uploadFile(String name, String address, File file) {
+	public static String uploadFile(String id, String name, String address,
+			File file) {
 		String response = null;
 		try {
 			DefaultHttpClient httpClient = new DefaultHttpClient();
@@ -32,6 +34,7 @@ public class ServerApi {
 
 			MultipartEntity multipartEntity = new MultipartEntity();
 
+			multipartEntity.addPart(API_UPLOAD_ID, new StringBody(id));
 			multipartEntity.addPart(API_UPLOAD_NAME, new StringBody(name));
 			multipartEntity
 					.addPart(API_UPLOAD_ADDRESS, new StringBody(address));

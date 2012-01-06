@@ -21,7 +21,6 @@ import android.widget.Toast;
 
 import com.larc.bluetoothconnect.BluetoothService;
 import com.larc.bluetoothconnect.DeviceListActivity;
-import com.larc.waveform.service.GPSLocation;
 import com.larc.waveform.service.HealthDeviceBluetoothService;
 import com.larc.waveform.ui.widget.WaveformView;
 import com.larc.waveform.ui.widget.WaveformView.WaveformAdapter;
@@ -48,8 +47,9 @@ public class WaveformActivity extends Activity implements
 	private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
 	private static final int REQUEST_ENABLE_BT = 3;
 
-	private static final String TITLE_EEG = "4-Channel EEG Signals";
-	private static final String TITLE_DBS = "4-Channel DBS Signals";
+	/*** These variable are for multiBio-channels ***/
+	// private static final String TITLE_EEG = "4-Channel EEG Signals";
+	// private static final String TITLE_DBS = "4-Channel DBS Signals";
 
 	private static final int[] LINE_COLOR_ARRAY = { Color.RED, Color.BLUE,
 			Color.GREEN, Color.YELLOW };
@@ -73,19 +73,9 @@ public class WaveformActivity extends Activity implements
 	private boolean mIsPlaying = true;
 
 	private Handler mRateRefreshHandler;
-	private Handler mEmergencyCheckHandler;
-
-	private String EMERGENCYC_CONNECTION_PHONE_NUMBER = "0918183964";
-	private String SELF_PHONE_NUMBER;
-	private String SMS_MESSEGE_CONTENT = "Emergency";
-	private String mSelfPhoneNumber;
-	private boolean mEmergency = false;
-	private boolean mConnectionCheck = false;
-	private boolean mSMSSended = false;
 
 	private BluetoothAdapter mBluetoothAdapter = null;
 	private HealthDeviceBluetoothService mHealthDeviceBluetoothService;
-	private GPSLocation mGPSLocationService;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -95,7 +85,6 @@ public class WaveformActivity extends Activity implements
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		setSignal(SIGNAL_EEG);
 		startDrawing();
-		// mGPSLocationService.locationService();
 	}
 
 	// Setup views and widgets at the first time the activity is created
@@ -134,7 +123,6 @@ public class WaveformActivity extends Activity implements
 
 		mRateRefreshHandler = new Handler();
 		mRateRefreshHandler.post(mRateRefreshRunnable);
-		mEmergencyCheckHandler = new Handler();
 		// mEmergencyCheckHandler.post(mEmergencyCheckRunnable);
 
 		// create reusable layout parameter for adding view
@@ -391,7 +379,6 @@ public class WaveformActivity extends Activity implements
 			switch (state) {
 			case BluetoothService.STATE_CONNECTED:
 				text = "connected";
-				mConnectionCheck = true;
 				break;
 			case BluetoothService.STATE_CONNECTING:
 				text = "connecting";

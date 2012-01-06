@@ -40,6 +40,8 @@ public class DataFileManager {
 	}
 
 	public final ArrayList<File> mSavedFileList = new ArrayList<File>();
+	public final ArrayList<File> mSavedLocationFileList = new ArrayList<File>();
+
 	private String mId = "xxx";
 	private String mName = "Larc";
 	private String mPhoneNumber = "09xxxxxxxx";
@@ -88,12 +90,12 @@ public class DataFileManager {
 
 				try {
 					FileOutputStream fos = new FileOutputStream(outputFile);
-					fos.write(header.toByte());
+					// fos.write(header.toByte());
 					// fos.write(builder.toString().getBytes());
 					fos.write(data, offset, length);
 					fos.close();
 
-					onFileSaved(outputFile);
+					onDataFileSaved(outputFile);
 
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
@@ -118,7 +120,7 @@ public class DataFileManager {
 
 				StringBuilder builder = new StringBuilder(length * 12);
 				for (int i = 0; i < length; i++) {
-					builder.append(String.format("%f,", data[i]));
+					builder.append(String.format("%010f,", data[i]));
 				}
 
 				Date date = new Date();
@@ -143,6 +145,7 @@ public class DataFileManager {
 
 				try {
 					FileOutputStream fos = new FileOutputStream(outputFile);
+					// fos.write(header.toByte());
 					fos.write(builder.toString().getBytes());
 					fos.close();
 
@@ -160,29 +163,45 @@ public class DataFileManager {
 
 	}
 
-	protected void onFileSaved(File savedFile) {
+	protected void onDataFileSaved(File savedFile) {
 		mSavedFileList.add(savedFile);
-		if (mSavedFileList.size() > 15) {
+		Log.v(TAG, "onDataFileSaved");
+		if (mSavedFileList.size() > 0) {
 			uploadSavedFiles();
 		}
 	}
 
 	protected void onLocationFileSaved(File savedFile) {
-		mSavedFileList.add(savedFile);
-		if (mSavedFileList.size() > 0) {
-			uploadSavedFiles();
-			Log.v(TAG, "uploadSavedFiles = ");
-		}
+		mSavedLocationFileList.add(savedFile);
+		Log.v(TAG, "onLocationFileSaved");
 	}
 
 	private void uploadSavedFiles() {
+
+		Log.v(TAG, "DataFileList Size = " + mSavedFileList.size());
+		Log.v(TAG, "LocationFileList Size = " + mSavedLocationFileList.size());
+
+		mSavedFileList.addAll(mSavedLocationFileList);
+		mSavedLocationFileList.clear();
+
+		Log.v(TAG, "SavedFiles Merged");
+		Log.v(TAG, "SavedFileList Size = " + mSavedFileList.size());
+		Log.v(TAG, "LocationFileList Size = " + mSavedLocationFileList.size());
+
+		/***
+		 * For each file in ArrayList<File>() mSavedFileList. List a new
+		 * UploadTask into Vector<UploadTask> sUploadList by function
+		 * "listUploadTask()" in "WaveformUploadService.java" .
+		 ***/
 		for (int i = 0; i < mSavedFileList.size(); i++) {
 			File file = mSavedFileList.get(i);
-			WaveformUploadService.startUploadData(WaveformApplication
+			// Tasks are created from constructor "UploadTask()" in
+			// "UploadTask.java" .
+			WaveformUploadService.listUploadTask(WaveformApplication
 					.getInstance(), new UploadTask(file, mId, mName,
 					mPhoneNumber));
-			mSavedFileList.clear();
 		}
+		mSavedFileList.clear();
 	}
 
 	/** format the input date into the form (yyyyMMddHHmmss) we want **/

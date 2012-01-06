@@ -17,7 +17,7 @@ public class HealthDeviceBluetoothService extends BluetoothService implements
 
 	private EmergencyCallService mEmergencyCallService;
 	private DataFileManager mDataFileManager;
-	private final GPSLocation mGPSLocation;
+	private final GPSLocationService mGPSLocation;
 	private final EcgData mEcgData;
 
 	private HealthDeviceBluetoothService(Context context) {
@@ -26,7 +26,7 @@ public class HealthDeviceBluetoothService extends BluetoothService implements
 		mEcgData = new EcgData();
 		mEcgData.setListener(this);
 
-		mGPSLocation = GPSLocation.getInstance();
+		mGPSLocation = GPSLocationService.getInstance();
 		mGPSLocation.setHandler();
 		mGPSLocation.mLocationServiceHandler
 				.post(mGPSLocation.mLocationServiceRunnable);

@@ -1,15 +1,19 @@
 package com.larc.waveform.data;
 
-import android.content.Context;
+import android.os.Handler;
 import android.util.Log;
 
 public class LocationData {
 
 	private static final String TAG = "LocationData";
 
-	private final double[] mLocationDataBuffer = new double[BUFFER_SIZE];
-	protected static int BUFFER_SIZE = 4;
+	// Adjust variable .
+	protected static int BUFFER_SIZE = 50;
+	public int LOCATION_BUFFER_SAVE_PERIOD = 1000 * 60;
+
+	private final double[] mLocationDataBuffer = new double[BUFFER_SIZE + 1];
 	private int mPointer = 0;
+	private int mCurrentPosition = 0;
 	private static LocationData lInstance;
 	private DataFileManager mDataFileManager;
 
@@ -30,29 +34,49 @@ public class LocationData {
 
 	public synchronized void write(double data) {
 
-		int currentPosition = 0;
-		currentPosition = mPointer;
+		mCurrentPosition = 0;
+		mCurrentPosition = mPointer;
 
 		// Check if Buffer us full .
-		if (currentPosition + 1 <= BUFFER_SIZE - 1) {
+		if (mCurrentPosition + 1 <= BUFFER_SIZE) {
 
 		} else {
-			onBufferFull(mLocationDataBuffer, 0, BUFFER_SIZE);
+			onBufferFull(mLocationDataBuffer, 1, BUFFER_SIZE);
 			// reset Buffer's pointer .
 			mPointer = 0;
-			currentPosition = 0;
+			mCurrentPosition = 0;
 		}
 
 		// Put received Data into mDataBuffer .
-		mLocationDataBuffer[currentPosition + 1] = data;
+		mLocationDataBuffer[mCurrentPosition + 1] = data;
 
 		mPointer += 1;
 	}
+
+	public Handler mLocationDataHandler;
+
+	public void setHandler() {
+		mLocationDataHandler = new Handler();
+	}
+
+	public Runnable mLocationDataRunnable = new Runnable() {
+		public void run() {
+
+			mDataFileManager
+					.saveDoubleData(mLocationDataBuffer, 1, BUFFER_SIZE);
+			mPointer = 0;
+			mCurrentPosition = 0;
+			Log.v(TAG, "save Location Data By Runnable");
+
+			mLocationDataHandler.postDelayed(this, LOCATION_BUFFER_SAVE_PERIOD);
+
+		}
+	};
 
 	/** Do different function under different case when Buffer is full . **/
 	protected void onBufferFull(double[] bufferData, final int offset,
 			final int length) {
 		mDataFileManager.saveDoubleData(bufferData, offset, length);
-		Log.v(TAG, "saveDoubleData = ");
+		Log.v(TAG, "save Location Data By Full Buffer");
 	}
 }

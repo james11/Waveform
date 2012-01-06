@@ -12,8 +12,8 @@ public class EcgData extends BufferedByteData {
 	private byte[] mLastData = new byte[ECG_BUFFER_SIZE];
 
 	private static final String TAG = "EcgData";
-	// private static final boolean VERBOSE = true;
 
+	// Adjust variable .
 	private static final int ECG_BUFFER_SIZE = 1024 * 499;
 	private static final int SATURATION_REGION = 20;
 

@@ -13,24 +13,27 @@ import android.widget.Toast;
 import com.larc.waveform.WaveformApplication;
 import com.larc.waveform.data.LocationData;
 
-public class GPSLocation implements LocationListener {
+public class GPSLocationService implements LocationListener {
 
 	private static final String TAG = "GPS";
-	private Context mContext;
 
 	private int LOCATION_SERVICE_CHECK_PERIOD = 1000 * 10;
+	private int LOCATION_UPDATE_PERIOD = 1000 * 60 * 10;
+	private int LOCATION_UPDATE_DISTANCE = 10;
 
+	private Context mContext;
 	private LocationManager mLocationManager;
 	private LocationData mLocationData;
+
 	private String bestProvider = LocationManager.GPS_PROVIDER;
 	public double mlongitude;
 	public double mlatitude;
 
-	private static GPSLocation gInstance;
+	private static GPSLocationService gInstance;
 
-	public static GPSLocation getInstance() {
+	public static GPSLocationService getInstance() {
 		if (gInstance == null) {
-			gInstance = new GPSLocation();
+			gInstance = new GPSLocationService();
 		}
 		return gInstance;
 	}
@@ -57,8 +60,10 @@ public class GPSLocation implements LocationListener {
 				// NETWORK provider is open .
 				locationServiceInitial();
 			} else {
-				Toast.makeText(mContext, "請開啟定位服務", Toast.LENGTH_LONG).show();
-				// Recall runnable until location provider is opened .
+				Toast.makeText(mContext, "Please open Location Service",
+						Toast.LENGTH_LONG).show();
+				// Recall runnable every 10 seconds until location provider is
+				// opened .
 				mLocationServiceHandler.postDelayed(this,
 						LOCATION_SERVICE_CHECK_PERIOD);
 			}
@@ -66,31 +71,41 @@ public class GPSLocation implements LocationListener {
 	};
 
 	private void locationServiceInitial() {
-		// lms = (LocationManager) getSystemService(LOCATION_SERVICE);
+		mLocationData = LocationData.getInstance();
+		mLocationData.setHandler();
+		mLocationData.mLocationDataHandler.postDelayed(
+				mLocationData.mLocationDataRunnable, mLocationData.LOCATION_BUFFER_SAVE_PERIOD);
+		mLocationManager.requestLocationUpdates(bestProvider,
+				LOCATION_UPDATE_PERIOD, LOCATION_UPDATE_DISTANCE, this);
 
-		Criteria criteria = new Criteria(); // 資訊提供者選取標準
-		bestProvider = mLocationManager.getBestProvider(criteria, true); // 選擇精準度最高的提供者
+		Criteria criteria = new Criteria(); // Information provider standard .
+		bestProvider = mLocationManager.getBestProvider(criteria, true); // Select
+																			// most
+																			// accurate
+																			// provider
+																			// .
 
 		// Use Network to get location .
 		Location location = mLocationManager
 				.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-		mLocationManager.requestLocationUpdates(bestProvider, 1000, 0, this);
 		getLocation(location);
 	}
 
 	private void getLocation(Location location) {
+
 		if (location != null) {
-			mlongitude = location.getLongitude(); // getLongitude (經度)
-			mlatitude = location.getLatitude(); // getLatitude (緯度)
-			mLocationData = LocationData.getInstance();
+			mlongitude = location.getLongitude(); // getLongitude
+			mlatitude = location.getLatitude(); // getLatitude
+
 			mLocationData.write(mlongitude);
 			mLocationData.write(mlatitude);
 
-			Log.v(TAG, "mlongitude = " + mlongitude);
-			Log.v(TAG, "mlatitude = " + mlatitude);
+			Log.v(TAG, "Longitude = " + mlongitude);
+			Log.v(TAG, "Latitude = " + mlatitude);
 
 		} else {
-			Toast.makeText(mContext, "無法定位座標", Toast.LENGTH_LONG).show();
+			Toast.makeText(mContext, "Can not get Location INFO",
+					Toast.LENGTH_LONG).show();
 		}
 	}
 
