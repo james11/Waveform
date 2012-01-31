@@ -1,5 +1,7 @@
 package com.larc.waveform;
 
+import java.util.RandomAccess;
+
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -16,6 +18,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
+import android.widget.RadioGroup;
+import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,7 +30,7 @@ import com.larc.waveform.ui.widget.WaveformView;
 import com.larc.waveform.ui.widget.WaveformView.WaveformAdapter;
 
 public class WaveformActivity extends Activity implements
-		Button.OnClickListener {
+		Button.OnClickListener, OnCheckedChangeListener {
 	private static final int DEFAULT_SIZE = 5000; // Screen pixels number
 	private static final int PLOTTING_OFFSET = 200; // Offset plotting line .
 	private static final int WAVEFORM_COUNT = 1;
@@ -68,6 +72,7 @@ public class WaveformActivity extends Activity implements
 	private TextView mSignalTypeTextView;
 	private TextView mlongitudeTextView;
 	private TextView mlatitudeTextView;
+	private RadioGroup mRadioGroup;
 
 	private int mSignal = SIGNAL_EEG;
 	private boolean mIsPlaying = true;
@@ -99,6 +104,7 @@ public class WaveformActivity extends Activity implements
 		mlatitudeTextView = (TextView) findViewById(R.id.mylatitudeTextView);
 		mWaveformContainer = (LinearLayout) findViewById(R.id.waveformContainer);
 		mChannelNameContainer = (LinearLayout) findViewById(R.id.channelNameBlock);
+		mRadioGroup = (RadioGroup) findViewById(R.id.radioGroup);
 
 		// uploadbar = (ProgressBar) this.findViewById(R.id.uploadBar);
 		// resulView = (TextView) this.findViewById(R.id.result);
@@ -120,7 +126,9 @@ public class WaveformActivity extends Activity implements
 		mButtonEEG.setOnClickListener(this);
 		mButtonDBS.setOnClickListener(this);
 		mButtonPause.setOnClickListener(this);
-
+		
+		mRadioGroup.setOnCheckedChangeListener(this);
+		
 		mRateRefreshHandler = new Handler();
 		mRateRefreshHandler.post(mRateRefreshRunnable);
 		// mEmergencyCheckHandler.post(mEmergencyCheckRunnable);
@@ -214,9 +222,9 @@ public class WaveformActivity extends Activity implements
 	@Override
 	public void onStop() {
 		super.onStop();
-		if (mHealthDeviceBluetoothService != null) {
-			mHealthDeviceBluetoothService.stop();
-		}
+//		if (mHealthDeviceBluetoothService != null) {
+//			mHealthDeviceBluetoothService.stop();
+//		}
 		stopDrawing();
 	};
 
@@ -476,6 +484,23 @@ public class WaveformActivity extends Activity implements
 			mHealthDeviceBluetoothService.start();
 		}
 
+	}
+
+	@Override
+	public void onCheckedChanged(RadioGroup group, int checkedId) {
+		int mode;
+		switch(checkedId){
+		case R.id.radio0:
+			mode = WaveformView.MODE_MOVING;
+			break;
+		default:
+		case R.id.radio1:
+			mode = WaveformView.MODE_STATIC;
+			break;
+		}
+		for (WaveformView wave: mWaveformArray){
+			wave.setMode(mode);
+		}
 	}
 
 	/** These functions below are for emergency SMS message sending . **/

@@ -32,6 +32,9 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 	private static final int DEFAULT_LINE_WIDTH = 3;
 	private static final int GRID_SIZE = 21;
 	private static final int GRID_COLOR = 0xFFCCCCCC;
+	
+	public static final int MODE_MOVING = 0;
+	public static final int MODE_STATIC = 1;
 
 	private int mUpdatePeriod = 20;
 
@@ -42,6 +45,8 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 	private WaveformAdapter mAdapter;
 
 	private Picture mGridPicture;
+	
+	private volatile int mMode = MODE_STATIC;
 
 	public static class WaveformAdapter {
 		public int[] getCurrentData(int set, int preferedSize) {
@@ -59,7 +64,7 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 		super(context);
 		init();
 	}
-
+	
 	/**
 	 * function executed in constructor
 	 */
@@ -123,7 +128,7 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 				if (mmIsDrawing) {
 					for (int i = 0; i < mDataSets.size(); i++) {
 						DataSet data = mDataSets.get(i);
-						data.initPath(width, height);
+						data.initPath(width, height, mMode);
 					}
 					Canvas canvas = getHolder().lockCanvas();
 					if (canvas == null) {
@@ -179,6 +184,8 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 		private int lineWidth = DEFAULT_LINE_WIDTH;
 
 		private Path mmPath;
+		
+		private int mmStaticOffset = 0;
 
 		// fill the ArrayList with "0" at first .
 		public DataSet(int size) {
@@ -198,7 +205,7 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 			return mmPath;
 		}
 
-		public void initPath(int width, int height) {
+		public void initPath(int width, int height, int mode) {
 			mmPath = new Path();
 			int size = size();
 			if (size <= 0)
@@ -214,13 +221,24 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 			paint.setColor(paintColor);
 			paint.setStrokeWidth(lineWidth);
 
-			ListIterator<Integer> iter = listIterator();
-
+			ListIterator<Integer> iter;
+			
+			switch(mode){
+			case MODE_STATIC:
+				iter = listIterator(mmStaticOffset);
+				break;
+			case MODE_MOVING:
+			default:
+				iter = listIterator();
+				break;
+			}
+			
 			int y = 0;
 			if (iter.hasNext())
 				y = iter.next();
 			// And here
-			mmPath.moveTo(0, base - y * 3 * deltaY);
+			mmPath.moveTo(0, base - y * 3 * deltaY);			
+			
 			for (int j = 1; iter.hasNext(); j++) {
 				y = iter.next();
 				mmPath.lineTo(j * deltaX, base - y * 3 * deltaY);
@@ -241,6 +259,10 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 		public void push(int value) {
 			addLast(value);
 			removeFirst();
+			mmStaticOffset--;
+			if (mmStaticOffset <0){
+				mmStaticOffset= size()-1;
+			}
 		}
 	}
 
@@ -271,6 +293,10 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 			paint.setStrokeWidth(data.lineWidth);
 			canvas.drawPath(data.getPath(), paint);
 		}
+	}
+	
+	public void setMode(int mode){
+		mMode = mode;
 	}
 
 	public void start() {
@@ -312,22 +338,22 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 		}
 	}
 
-	public void pushData(int dataSetId, int data) {
-		if (dataSetId >= 0 && dataSetId < mDataSets.size()) {
-			mDataSets.get(dataSetId).push(data);
-			invalidate();
-		}
-	}
-
-	public void pushData(int dataSetId, int[] dataArray) {
-		if (dataSetId >= 0 && dataSetId < mDataSets.size() && dataArray != null) {
-			DataSet dataSet = mDataSets.get(dataSetId);
-			int size = dataArray.length;
-			for (int i = 0; i < size; i++) {
-				dataSet.push(dataArray[i]);
-			}
-		}
-	}
+//	public void pushData(int dataSetId, int data) {
+//		if (dataSetId >= 0 && dataSetId < mDataSets.size()) {
+//			mDataSets.get(dataSetId).push(data);
+//			invalidate();
+//		}
+//	}
+//
+//	public void pushData(int dataSetId, int[] dataArray) {
+//		if (dataSetId >= 0 && dataSetId < mDataSets.size() && dataArray != null) {
+//			DataSet dataSet = mDataSets.get(dataSetId);
+//			int size = dataArray.length;
+//			for (int i = 0; i < size; i++) {
+//				dataSet.push(dataArray[i]);
+//			}
+//		}
+//	}
 
 	public void removeDataSet(int dataSetId) {
 		if (dataSetId >= 0 && dataSetId < mDataSets.size()) {

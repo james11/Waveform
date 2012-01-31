@@ -1,11 +1,14 @@
 package com.larc.waveform.data;
 
+import java.util.ArrayList;
+
 import android.util.Log;
 
 public class EcgData extends BufferedByteData {
 
 	public EcgData() {
 		super(BufferedByteData.BUFFER_SIZE = ECG_BUFFER_SIZE);
+		mPeakDetector = new PeakDetector();
 	}
 
 	private byte[] mDataBuffer = new byte[ECG_BUFFER_SIZE];
@@ -39,6 +42,8 @@ public class EcgData extends BufferedByteData {
 	public int mDeltaRate;
 	public int mHeartRate;
 	public EcgListener mListener;
+	
+	private final PeakDetector mPeakDetector;
 
 	/**
 	 * Create an interface "EcgListener" which contain function
@@ -53,30 +58,39 @@ public class EcgData extends BufferedByteData {
 
 	/** Count mHeartRate using detected mPeakCnt . **/
 	public int getHeartRate() {
-		if (mIncrease == true) {
-			mRate = (mPeakCnt * 6) - 3;
+		long interval = mPeakDetector.getAverageInterval();
+		Log.v("Heart", "interval: "+interval);
+		mPeakDetector.clear();
+		if (interval >0){
+			int rate = (int)(60000 / interval);
+			return rate;
 		} else {
-			mRate = (mPeakCnt * 6) + 3;
+			return 0;
 		}
-		Log.v(TAG, "mRate = " + mRate);
-		// Log.v(TAG, "mMaxData = " + mMaxData);
-		// Log.v(TAG, "mMinData = " + mMinData);
-
-		// In case of counting error at the beginning of peak value
-		// detecting .
-		if (mLast10SecRate - mRate >= 48) {
-			mRate = mLast10SecRate;
-			// Ignore violent rate delta during first 10 second .
-			mDeltaRate = 0;
-		}
-		Log.v(TAG, "mRateCheck = " + mRate);
-
-		// Count the displayed HeartRate .
-		mHeartRate = (4 * mRate + 3 * mLast10SecRate + 2 * mLast20SecRate) / 9;
-
-		// Reset mPeakCnt for another new detection period .
-		mPeakCnt = 0;
-		return mHeartRate;
+//		if (mIncrease == true) {
+//			mRate = (mPeakCnt * 6) - 3;
+//		} else {
+//			mRate = (mPeakCnt * 6) + 3;
+//		}
+//		Log.v(TAG, "mRate = " + mRate);
+//		// Log.v(TAG, "mMaxData = " + mMaxData);
+//		// Log.v(TAG, "mMinData = " + mMinData);
+//
+//		// In case of counting error at the beginning of peak value
+//		// detecting .
+//		if (mLast10SecRate - mRate >= 48) {
+//			mRate = mLast10SecRate;
+//			// Ignore violent rate delta during first 10 second .
+//			mDeltaRate = 0;
+//		}
+//		Log.v(TAG, "mRateCheck = " + mRate);
+//
+//		// Count the displayed HeartRate .
+//		mHeartRate = (4 * mRate + 3 * mLast10SecRate + 2 * mLast20SecRate) / 9;
+//
+//		// Reset mPeakCnt for another new detection period .
+//		mPeakCnt = 0;
+//		return mHeartRate;
 	}
 
 	/** detect mDeltaRate using counted mHeartRate . **/
@@ -110,11 +124,15 @@ public class EcgData extends BufferedByteData {
 			mGetPointer = 0;
 			currentPosition = 0;
 		}
-
+		
+		mPeakDetector.putData(data[0]&0xFF);
+		Log.v("Heart", "put d: "+(data[0]&0xFF));
 		// Put received Data into mDataBuffer , and starting data analyzing .
 		for (int i = 0; i < length; i++) {
 			mDataBuffer[currentPosition + i] = data[i];
-
+//			if (i % 128 == 0){
+//			}
+			/*
 			// Check Saturation
 			int DeltaY = java.lang.Math.abs((data[i] & 0xFF) - BASE);
 			if (DeltaY >= (256 - (BASE + SATURATION_REGION))) {
@@ -180,6 +198,7 @@ public class EcgData extends BufferedByteData {
 			}
 			mLastData[i] = data[i];
 			mLastIncrease = mIncrease;
+			*/
 		}
 		mPointer += length;
 	}
@@ -219,4 +238,87 @@ public class EcgData extends BufferedByteData {
 		}
 	}
 
+	private static class PeakDetector{
+		private static final int DETECTOR_SIZE = 5;
+		private static final int PEAK_POS = 2;
+		
+		private ArrayList<Long> mPeakTimeList = new ArrayList<Long>();
+		
+		private int mIndex = 0;
+		private final int[] mBuffer = new int[DETECTOR_SIZE];
+		private final long[] mTime = new long[DETECTOR_SIZE];
+		
+		public void putData(int value){
+			mBuffer[mIndex] = value;
+			mTime[mIndex] = System.currentTimeMillis();
+			nextValue();
+			checkPeak();
+		}
+		
+		public void checkPeak(){
+			boolean hasPeak = true;
+			int index = mIndex;
+			//cal slopes
+			int slope;
+			int v1, v2;
+			int max, min;
+			v1 = nextValue();
+			max = v1;
+			min = v1;
+			for (int i=1; i<DETECTOR_SIZE; i++){
+				v2 = nextValue();
+				slope = v2-v1;
+				v1 = v2;
+				if (v1 > max){
+					max = v1;
+				}
+				if (v1 < min){
+					min = v1;
+				}
+				
+				if (i <= PEAK_POS){
+					if (slope < -0){
+						hasPeak= false;
+						break;
+					}
+				} else {
+					if (slope > 0){
+						hasPeak= false;
+						break;
+					}
+				}
+			}
+			
+			mIndex = index;
+			if (hasPeak && (max - min)>30){
+				mPeakTimeList.add(mTime[mIndex]);
+				Log.v("Heart","time: "+ mTime[mIndex]);
+			}
+		}
+		
+		private int nextValue(){
+			mIndex++;
+			if (mIndex >= DETECTOR_SIZE){
+				mIndex = 0;
+			}
+			return mBuffer[mIndex];
+		}
+		
+		public void clear(){
+			mPeakTimeList.clear();
+		}
+		
+		public long getAverageInterval(){
+			if (mPeakTimeList.size() <= 1){
+				return 0;
+			} else {
+				int size = mPeakTimeList.size();
+				long sum = 0;
+				for (int i= 1; i < size; i++){
+					sum += (mPeakTimeList.get(i)-mPeakTimeList.get(i-1));
+				}
+				return sum / (size - 1);
+			}
+		}
+	}
 }

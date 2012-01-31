@@ -66,15 +66,29 @@
             android:gravity="center_horizontal|center_vertical"
             android:text="Pause" >
         </Button>
+        
+		<RadioGroup
+            android:id="@+id/radioGroup"
+            android:gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
 
-        <ZoomControls
-            android:id="@+id/zoomControl"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="3"
-            android:gravity="center_horizontal|center_vertical" >
-        </ZoomControls>
+            <RadioButton
+                android:id="@+id/radio0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:textColor="#FFF"
+                android:text="Mode1" />
 
+            <RadioButton
+                android:id="@+id/radio1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FFF"
+                android:text="Mode2" />
+
+        </RadioGroup>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
