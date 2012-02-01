@@ -3,8 +3,8 @@
 
     <string name="hello">Hello World, WaveformActivity!</string>
     <string name="app_name">Waveform</string>
-    <string name="EEG">4-Channel EEG signals</string>
-    <string name="DBS">4-Channel DBS signals</string>
+    <string name="EEG">1-Channel EEG signals</string>
+    <string name="DBS">1-Channel DBS signals</string>
 
     <!-- DeviceListActivity -->
     <string name="scanning">scanning for devices...</string>
@@ -32,5 +32,12 @@
     <string name="sdcarderror">Uploading failed , no such value existed</string>
     <string name="success">Uploading success</string>
     <string name="locationable">Enable Location</string>
+    <string name="mode_moving">Moving Mode</string>
+    <string name="mode_stastic">Stastic Mode</string>
+    <string name="pause">Pause</string>
+    <string name="DBS_channel">DBS signals</string>
+    <string name="ECG_channel">ECG Signals</string>
+    <string name="longitude">Longitude = </string>
+    <string name="latitude">Latitude = </string>
 
 </resources>

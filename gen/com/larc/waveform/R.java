@@ -67,6 +67,8 @@ public final class R {
     }
     public static final class string {
         public static final int DBS=0x7f050003;
+        public static final int DBS_channel=0x7f05001c;
+        public static final int ECG_channel=0x7f05001d;
         public static final int EEG=0x7f050002;
         public static final int app_name=0x7f050001;
         public static final int bt_not_enabled_leaving=0x7f050010;
@@ -75,10 +77,15 @@ public final class R {
         public static final int filenotexsit=0x7f050015;
         public static final int hello=0x7f050000;
         public static final int insecure_connect=0x7f050012;
+        public static final int latitude=0x7f05001f;
         public static final int locationable=0x7f050018;
+        public static final int longitude=0x7f05001e;
+        public static final int mode_moving=0x7f050019;
+        public static final int mode_stastic=0x7f05001a;
         public static final int none_found=0x7f050007;
         public static final int none_paired=0x7f050006;
         public static final int not_connected=0x7f05000f;
+        public static final int pause=0x7f05001b;
         public static final int quit=0x7f050014;
         /**  DeviceListActivity 
          */

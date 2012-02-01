@@ -1,7 +1,5 @@
 package com.larc.waveform;
 
-import java.util.RandomAccess;
-
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -109,13 +107,13 @@ public class WaveformActivity extends Activity implements
 		// uploadbar = (ProgressBar) this.findViewById(R.id.uploadBar);
 		// resulView = (TextView) this.findViewById(R.id.result);
 
-		mSignalTypeTextView.setText("1-Channel ECG Signal");
+		mSignalTypeTextView.setText(R.string.EEG);
 		mSignalTypeTextView.setTextColor(COLOR_TEXT_NORMAL);
 
-		mlongitudeTextView.setText("longitude = ");
+		mlongitudeTextView.setText(R.string.longitude);
 		mlongitudeTextView.setTextColor(COLOR_TEXT_NORMAL);
 
-		mlatitudeTextView.setText("latitude = ");
+		mlatitudeTextView.setText(R.string.latitude);
 		mlatitudeTextView.setTextColor(COLOR_TEXT_NORMAL);
 
 		mButtonDBS.setTextColor(COLOR_TEXT_NORMAL);
@@ -126,9 +124,9 @@ public class WaveformActivity extends Activity implements
 		mButtonEEG.setOnClickListener(this);
 		mButtonDBS.setOnClickListener(this);
 		mButtonPause.setOnClickListener(this);
-		
+
 		mRadioGroup.setOnCheckedChangeListener(this);
-		
+
 		mRateRefreshHandler = new Handler();
 		mRateRefreshHandler.post(mRateRefreshRunnable);
 		// mEmergencyCheckHandler.post(mEmergencyCheckRunnable);
@@ -222,9 +220,9 @@ public class WaveformActivity extends Activity implements
 	@Override
 	public void onStop() {
 		super.onStop();
-//		if (mHealthDeviceBluetoothService != null) {
-//			mHealthDeviceBluetoothService.stop();
-//		}
+		// if (mHealthDeviceBluetoothService != null) {
+		// mHealthDeviceBluetoothService.stop();
+		// }
 		stopDrawing();
 	};
 
@@ -489,7 +487,7 @@ public class WaveformActivity extends Activity implements
 	@Override
 	public void onCheckedChanged(RadioGroup group, int checkedId) {
 		int mode;
-		switch(checkedId){
+		switch (checkedId) {
 		case R.id.radio0:
 			mode = WaveformView.MODE_MOVING;
 			break;
@@ -498,7 +496,7 @@ public class WaveformActivity extends Activity implements
 			mode = WaveformView.MODE_STATIC;
 			break;
 		}
-		for (WaveformView wave: mWaveformArray){
+		for (WaveformView wave : mWaveformArray) {
 			wave.setMode(mode);
 		}
 	}
