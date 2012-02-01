@@ -76,7 +76,7 @@
             <RadioButton
                 android:id="@+id/radio0"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:checked="true"
                 android:textColor="#FFF"
                 android:text="@string/mode_moving" />
@@ -84,7 +84,7 @@
             <RadioButton
                 android:id="@+id/radio1"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:textColor="#FFF"
                 android:text="@string/mode_stastic" />
 
