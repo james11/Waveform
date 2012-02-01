@@ -6,6 +6,12 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 
+/***
+ * This class be called by function "uploadSavedFiles()" in
+ * "DataFileManager.java" . uploadSavedFiles()---> listUploadTask(){
+ * context.startService(intent) : start WaveformUploadService which extend
+ * IntentService } ---> UploadTask ---> ServerAPI .
+ ***/
 public class WaveformUploadService extends IntentService {
 
 	private static final String TAG = "WaveformUploadService";

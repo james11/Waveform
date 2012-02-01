@@ -58,9 +58,11 @@ public class EcgData extends BufferedByteData {
 		} else {
 			mRate = (mPeakCnt * 6) + 3;
 		}
-		Log.v(TAG, "mRate = " + mRate);
-		// Log.v(TAG, "mMaxData = " + mMaxData);
-		// Log.v(TAG, "mMinData = " + mMinData);
+
+//		Log.v(TAG, "mDetectionRegionSize = " + mDetectionRegionSize);
+//		Log.v(TAG, "mSlopZero = " + mSlopZero);
+		Log.v(TAG, "mMaxData = " + mMaxData);
+		Log.v(TAG, "mMinData = " + mMinData);
 
 		// In case of counting error at the beginning of peak value
 		// detecting .
@@ -156,7 +158,10 @@ public class EcgData extends BufferedByteData {
 			}
 
 			long CurrentTime = System.currentTimeMillis();
-			int PeakPeriod = (int) (CurrentTime - mLastPeakTime);
+			long PeakPeriod = (long) (CurrentTime - mLastPeakTime);
+			// Log.v(TAG, "CurrentTime = " + CurrentTime);
+			// Log.v(TAG, "mLastPeakTime = " + mLastPeakTime);
+			// Log.v(TAG, "PeakPeriod = " + PeakPeriod);
 			// Emergency detection .
 			if (PeakPeriod >= 3000 && mLastPeakTime > 0) {
 				onHeartBeatStop();
@@ -164,11 +169,11 @@ public class EcgData extends BufferedByteData {
 			int regionLowerBound = mMinData;
 			int regionUppererBound = mMaxData;
 
-			mDetectionRegionSize = 3 * (regionUppererBound - regionLowerBound) / 4;
+			mDetectionRegionSize = 3 * (regionUppererBound - regionLowerBound) / 5;
 			// In case of counting continuous peak value in error , add another
 			// condition (delta time between two peak) to count #peak .
 			if ((data[i] & 0xFF) >= (mMaxData - mDetectionRegionSize)
-					&& (mSlopZero == true) && (PeakPeriod >= 300)) {
+					&& (mSlopZero == true) && (PeakPeriod >= 200)) {
 				mPeakCnt += 1;
 				Log.v(TAG, "HeartBeatCount");
 				mLastPeakTime = CurrentTime;

@@ -5,6 +5,10 @@ import java.io.Serializable;
 
 import com.larc.bluetoothconnect.ServerApi;
 
+/***
+ * Define "public UploadTask()" and use function "upload()" to be the interface
+ * between "WaveformUploadService.java" and "ServiceAPI.java" .
+ ***/
 public class UploadTask implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -25,6 +29,8 @@ public class UploadTask implements Serializable {
 		if (response == null) {
 			return false;
 		} else {
+			// If response matches "Uploading Success" return true, else return
+			// false .
 			return response.matches("Uploading Success");
 		}
 	}

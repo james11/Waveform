@@ -30,7 +30,7 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 													// .
 	private static final int DEFAULT_PAINT_COLOR = 0xFFFF0000;
 	private static final int DEFAULT_LINE_WIDTH = 3;
-	private static final int GRID_SIZE = 21;
+	private static final int GRID_SIZE = 14;
 	private static final int GRID_COLOR = 0xFFCCCCCC;
 
 	private int mUpdatePeriod = 20;

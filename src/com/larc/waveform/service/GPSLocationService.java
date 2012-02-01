@@ -19,7 +19,7 @@ public class GPSLocationService implements LocationListener {
 
 	private int LOCATION_SERVICE_CHECK_PERIOD = 1000 * 10;
 	private int LOCATION_UPDATE_PERIOD = 1000 * 60 * 10;
-	private int LOCATION_UPDATE_DISTANCE = 10;
+	private int LOCATION_UPDATE_DISTANCE = 100;
 
 	private Context mContext;
 	private LocationManager mLocationManager;
@@ -74,16 +74,14 @@ public class GPSLocationService implements LocationListener {
 		mLocationData = LocationData.getInstance();
 		mLocationData.setHandler();
 		mLocationData.mLocationDataHandler.postDelayed(
-				mLocationData.mLocationDataRunnable, mLocationData.LOCATION_BUFFER_SAVE_PERIOD);
+				mLocationData.mLocationDataRunnable,
+				mLocationData.LOCATION_BUFFER_SAVE_PERIOD);
 		mLocationManager.requestLocationUpdates(bestProvider,
 				LOCATION_UPDATE_PERIOD, LOCATION_UPDATE_DISTANCE, this);
 
 		Criteria criteria = new Criteria(); // Information provider standard .
-		bestProvider = mLocationManager.getBestProvider(criteria, true); // Select
-																			// most
-																			// accurate
-																			// provider
-																			// .
+		// Select most accurate provider.
+		bestProvider = mLocationManager.getBestProvider(criteria, true);
 
 		// Use Network to get location .
 		Location location = mLocationManager

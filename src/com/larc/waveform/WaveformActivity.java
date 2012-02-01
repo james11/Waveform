@@ -27,7 +27,7 @@ import com.larc.waveform.ui.widget.WaveformView.WaveformAdapter;
 
 public class WaveformActivity extends Activity implements
 		Button.OnClickListener {
-	private static final int DEFAULT_SIZE = 5000; // Screen pixels number
+	private static final int DEFAULT_SIZE = 5760; // Screen pixels number
 	private static final int PLOTTING_OFFSET = 200; // Offset plotting line .
 	private static final int WAVEFORM_COUNT = 1;
 	private static final int HEART_RATE_UPDATE_PERIOD = 1000 * 10;

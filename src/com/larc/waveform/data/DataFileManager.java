@@ -166,7 +166,7 @@ public class DataFileManager {
 	protected void onDataFileSaved(File savedFile) {
 		mSavedFileList.add(savedFile);
 		Log.v(TAG, "onDataFileSaved");
-		if (mSavedFileList.size() > 0) {
+		if (mSavedFileList.size() > 2) {
 			uploadSavedFiles();
 		}
 	}
@@ -189,8 +189,8 @@ public class DataFileManager {
 		Log.v(TAG, "LocationFileList Size = " + mSavedLocationFileList.size());
 
 		/***
-		 * For each file in ArrayList<File>() mSavedFileList. List a new
-		 * UploadTask into Vector<UploadTask> sUploadList by function
+		 * For each file in ArrayList<File>() mSavedFileList. It will add a new
+		 * UploadTask into Vector<UploadTask>() sUploadList by function
 		 * "listUploadTask()" in "WaveformUploadService.java" .
 		 ***/
 		for (int i = 0; i < mSavedFileList.size(); i++) {
