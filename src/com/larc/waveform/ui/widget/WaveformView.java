@@ -15,29 +15,22 @@ import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-/**
- * This class is still being tested. Don't use it.
- * 
- * @author Jason
- * 
- */
 public class WaveformView extends SurfaceView implements SurfaceHolder.Callback {
 
 	// private static final String TAG = "WaveformView";
 	// private static final boolean VERBOSE = true;
 
-	private static final int DEFAULT_X_SIZE = 1400; // Size of DataSet ArrayList
-													// .
+	// Size of DataSet ArrayList .
+	private static final int DEFAULT_X_SIZE = 1400;
 	private static final int DEFAULT_PAINT_COLOR = 0xFFFF0000;
 	private static final int DEFAULT_LINE_WIDTH = 3;
 	private static final int GRID_SIZE = 21;
 	private static final int GRID_COLOR = 0xFFCCCCCC;
-	
+
 	public static final int MODE_MOVING = 0;
 	public static final int MODE_STATIC = 1;
 
 	private int mUpdatePeriod = 20;
-
 	private int mPlotingSpeed = 30;
 
 	private RefreshThread mRefreshThread;
@@ -45,7 +38,7 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 	private WaveformAdapter mAdapter;
 
 	private Picture mGridPicture;
-	
+
 	private volatile int mMode = MODE_STATIC;
 
 	public static class WaveformAdapter {
@@ -64,11 +57,12 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 		super(context);
 		init();
 	}
-	
+
 	/**
 	 * function executed in constructor
 	 */
 	private void init() {
+		// Only one DataSet in mDataSets ; one DataSet for each view(channel)
 		mDataSets = new ArrayList<DataSet>();
 		DataSet set = new DataSet(DEFAULT_X_SIZE);
 		mDataSets.add(set);
@@ -124,10 +118,15 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 				width = getWidth();
 				height = getHeight();
 
-				// Update view
+				// Initial views . Here has only one view .
 				if (mmIsDrawing) {
 					for (int i = 0; i < mDataSets.size(); i++) {
 						DataSet data = mDataSets.get(i);
+
+						/***
+						 * Just initial the path witch will be printed to screen
+						 * view later, but haven't show . :"DataSet.initPath()"
+						 ***/
 						data.initPath(width, height, mMode);
 					}
 					Canvas canvas = getHolder().lockCanvas();
@@ -135,11 +134,21 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 						return;
 					}
 					canvas.drawColor(Color.WHITE);
+
+					/***
+					 * Draw the path . Drawing can only be doing after
+					 * "SurfaceHolder.lockCanvas();" and before
+					 * "SurfaceHolder.unlockCanvasAndPost(canvas);" .
+					 ***/
 					drawCanvas(canvas);
 					getHolder().unlockCanvasAndPost(canvas);
 				}
 
-				// Request data and push into dataSet
+				/***
+				 * Request data which will be plot to the screen later (next
+				 * run()). Here has only one view, mDataSet.size() = 1;.
+				 * :"DataSet.pushData(int[] value)"
+				 ***/
 				long currentTime = System.currentTimeMillis();
 				if (mAdapter != null) {
 					float intputCount = ((float) (currentTime - mmLastUpdateTime))
@@ -151,6 +160,8 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 					}
 				}
 				mmLastUpdateTime = currentTime;
+
+				// Waiting for next refresh .
 				try {
 					Thread.sleep(mUpdatePeriod);
 				} catch (InterruptedException e) {
@@ -184,10 +195,11 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 		private int lineWidth = DEFAULT_LINE_WIDTH;
 
 		private Path mmPath;
-		
+
 		private int mmStaticOffset = 0;
 
-		// fill the ArrayList with "0" at first .
+		/***   ***/
+		// Fill a DataSet with "0" to add to ArrayList<DataSet> mDataSets .
 		public DataSet(int size) {
 			this(size, DEFAULT_UPPER, DEFAULT_LOWER, 0);
 		}
@@ -222,8 +234,11 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 			paint.setStrokeWidth(lineWidth);
 
 			ListIterator<Integer> iter;
-			
-			switch(mode){
+
+			// Set the initial point (0,Y) of screen view by setting
+			// "listIterator()". And then use "for( ; iter,hasNet(); ){ }" below
+			// to show complete view .
+			switch (mode) {
 			case MODE_STATIC:
 				iter = listIterator(mmStaticOffset);
 				break;
@@ -232,13 +247,13 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 				iter = listIterator();
 				break;
 			}
-			
+
 			int y = 0;
 			if (iter.hasNext())
 				y = iter.next();
 			// And here
-			mmPath.moveTo(0, base - y * 3 * deltaY);			
-			
+			mmPath.moveTo(0, base - y * 3 * deltaY);
+
 			for (int j = 1; iter.hasNext(); j++) {
 				y = iter.next();
 				mmPath.lineTo(j * deltaX, base - y * 3 * deltaY);
@@ -259,9 +274,16 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 		public void push(int value) {
 			addLast(value);
 			removeFirst();
+
+			/***
+			 * While the value of "mmStasticOffset" decrease from size() -1 to
+			 * "0", starting point's location of iterator move from 1 to size().
+			 * # of elements iterator can return increased from 1 to size() of
+			 * LinkedList.
+			 ***/
 			mmStaticOffset--;
-			if (mmStaticOffset <0){
-				mmStaticOffset= size()-1;
+			if (mmStaticOffset < 0) {
+				mmStaticOffset = size() - 1;
 			}
 		}
 	}
@@ -294,8 +316,8 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 			canvas.drawPath(data.getPath(), paint);
 		}
 	}
-	
-	public void setMode(int mode){
+
+	public void setMode(int mode) {
 		mMode = mode;
 	}
 
@@ -338,23 +360,6 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 		}
 	}
 
-//	public void pushData(int dataSetId, int data) {
-//		if (dataSetId >= 0 && dataSetId < mDataSets.size()) {
-//			mDataSets.get(dataSetId).push(data);
-//			invalidate();
-//		}
-//	}
-//
-//	public void pushData(int dataSetId, int[] dataArray) {
-//		if (dataSetId >= 0 && dataSetId < mDataSets.size() && dataArray != null) {
-//			DataSet dataSet = mDataSets.get(dataSetId);
-//			int size = dataArray.length;
-//			for (int i = 0; i < size; i++) {
-//				dataSet.push(dataArray[i]);
-//			}
-//		}
-//	}
-
 	public void removeDataSet(int dataSetId) {
 		if (dataSetId >= 0 && dataSetId < mDataSets.size()) {
 			mDataSets.remove(dataSetId);
@@ -375,12 +380,6 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 		// draw background grid line
 
 		/** Print Threshold line . **/
-		// Paint paintT = new Paint();
-		// paintT.setColor(0xFF00CC00);
-		// paintT.setStrokeWidth(3);
-		// paintT.setStyle(Style.STROKE);
-		// canvas.drawLine(0, height / 2 - 50, width, height / 2 - 50, paintT);
-
 		Paint paint = new Paint();
 		paint.setColor(GRID_COLOR);
 		paint.setStyle(Style.STROKE);
