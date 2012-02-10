@@ -1,7 +1,5 @@
 package com.larc.waveform.data;
 
-import java.util.ArrayList;
-
 import android.util.Log;
 
 public class EcgData extends BufferedByteData {
@@ -125,8 +123,8 @@ public class EcgData extends BufferedByteData {
 			currentPosition = 0;
 		}
 		
-		mPeakDetector.putData(data[0]&0xFF);
-		Log.v("Heart", "put d: "+(data[0]&0xFF));
+		mPeakDetector.putData(data, 0, length);
+//		Log.v("Heart", "length "+length+" put d: "+(data[0]&0xFF));
 		// Put received Data into mDataBuffer , and starting data analyzing .
 		for (int i = 0; i < length; i++) {
 			mDataBuffer[currentPosition + i] = data[i];
@@ -238,87 +236,4 @@ public class EcgData extends BufferedByteData {
 		}
 	}
 
-	private static class PeakDetector{
-		private static final int DETECTOR_SIZE = 5;
-		private static final int PEAK_POS = 2;
-		
-		private ArrayList<Long> mPeakTimeList = new ArrayList<Long>();
-		
-		private int mIndex = 0;
-		private final int[] mBuffer = new int[DETECTOR_SIZE];
-		private final long[] mTime = new long[DETECTOR_SIZE];
-		
-		public void putData(int value){
-			mBuffer[mIndex] = value;
-			mTime[mIndex] = System.currentTimeMillis();
-			nextValue();
-			checkPeak();
-		}
-		
-		public void checkPeak(){
-			boolean hasPeak = true;
-			int index = mIndex;
-			//cal slopes
-			int slope;
-			int v1, v2;
-			int max, min;
-			v1 = nextValue();
-			max = v1;
-			min = v1;
-			for (int i=1; i<DETECTOR_SIZE; i++){
-				v2 = nextValue();
-				slope = v2-v1;
-				v1 = v2;
-				if (v1 > max){
-					max = v1;
-				}
-				if (v1 < min){
-					min = v1;
-				}
-				
-				if (i <= PEAK_POS){
-					if (slope < -0){
-						hasPeak= false;
-						break;
-					}
-				} else {
-					if (slope > 0){
-						hasPeak= false;
-						break;
-					}
-				}
-			}
-			
-			mIndex = index;
-			if (hasPeak && (max - min)>30){
-				mPeakTimeList.add(mTime[mIndex]);
-				Log.v("Heart","time: "+ mTime[mIndex]);
-			}
-		}
-		
-		private int nextValue(){
-			mIndex++;
-			if (mIndex >= DETECTOR_SIZE){
-				mIndex = 0;
-			}
-			return mBuffer[mIndex];
-		}
-		
-		public void clear(){
-			mPeakTimeList.clear();
-		}
-		
-		public long getAverageInterval(){
-			if (mPeakTimeList.size() <= 1){
-				return 0;
-			} else {
-				int size = mPeakTimeList.size();
-				long sum = 0;
-				for (int i= 1; i < size; i++){
-					sum += (mPeakTimeList.get(i)-mPeakTimeList.get(i-1));
-				}
-				return sum / (size - 1);
-			}
-		}
-	}
 }
