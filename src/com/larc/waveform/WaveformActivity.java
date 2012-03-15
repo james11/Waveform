@@ -9,6 +9,8 @@ import android.graphics.Color;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -29,7 +31,7 @@ import com.larc.waveform.ui.widget.WaveformView.WaveformAdapter;
 
 public class WaveformActivity extends Activity implements
 		Button.OnClickListener, OnCheckedChangeListener {
-	private static final int DEFAULT_SIZE = 5000; // Screen pixels number
+	private static final int DEFAULT_SIZE = 1300; // Screen pixels number
 	private static final int PLOTTING_OFFSET = 200; // Offset plotting line .
 	private static final int WAVEFORM_COUNT = 1;
 	private static final int HEART_RATE_UPDATE_PERIOD = 1000 * 10;
@@ -515,7 +517,9 @@ public class WaveformActivity extends Activity implements
 	// }
 	// };
 	//
-	// private String getSelfPhoneNumber() {
+	// public String mSelfPhoneNumber;
+	//
+	// public String getSelfPhoneNumber() {
 	// TelephonyManager phoneManager = (TelephonyManager)
 	// getApplicationContext()
 	// .getSystemService(Context.TELEPHONY_SERVICE);
@@ -523,7 +527,7 @@ public class WaveformActivity extends Activity implements
 	// Log.v("Waveform", "PhoneNumberGet = " + mSelfPhoneNumber);
 	// return mSelfPhoneNumber;
 	// }
-	//
+
 	// private void emergencyCall() {
 	// SELF_PHONE_NUMBER = getSelfPhoneNumber();
 	// SmsManager smsManager = SmsManager.getDefault();

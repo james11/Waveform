@@ -145,7 +145,6 @@ public class DataFileManager {
 
 				try {
 					FileOutputStream fos = new FileOutputStream(outputFile);
-					// fos.write(header.toByte());
 					fos.write(builder.toString().getBytes());
 					fos.close();
 
@@ -202,6 +201,7 @@ public class DataFileManager {
 					mPhoneNumber));
 		}
 		mSavedFileList.clear();
+		Log.v(TAG, "Upload completed");
 	}
 
 	/** format the input date into the form (yyyyMMddHHmmss) we want **/

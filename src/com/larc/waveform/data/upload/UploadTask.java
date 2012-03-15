@@ -14,6 +14,7 @@ public class UploadTask implements Serializable {
 	private final String mPhoneNumber;
 
 	public UploadTask(File file, String id, String name, String phoneNumber) {
+
 		mFile = file;
 		mId = id;
 		mName = name;

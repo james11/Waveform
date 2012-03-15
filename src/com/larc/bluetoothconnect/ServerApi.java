@@ -22,6 +22,7 @@ public class ServerApi {
 	private static final String API_UPLOAD_FILE = "ufile";
 	private static final String API_UPLOAD_ID = "uid";
 	private static final String API_UPLOAD_NAME = "uname";
+	// "uaddress" represent phone number here .
 	private static final String API_UPLOAD_ADDRESS = "uaddress";
 
 	public static String uploadFile(String id, String name, String address,

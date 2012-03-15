@@ -16,10 +16,10 @@ public class EmergencyCallService {
 	private String EMERGENCYC_CONNECTION_PHONE_NUMBER = "0916961459";
 	private String SELF_PHONE_NUMBER;
 	private String SMS_MESSEGE_CONTENT = "Emergency";
-	private String mSelfPhoneNumber;
+	private static String mSelfPhoneNumber;
 	private boolean mSMSSended = false;
 
-	private Context mContext;
+	private static Context mContext;
 
 	public static EmergencyCallService getInstance() {
 		if (eInstance == null) {
@@ -28,9 +28,20 @@ public class EmergencyCallService {
 		return eInstance;
 	}
 
-	private String getSelfPhoneNumber() {
+	// private String getSelfPhoneNumber() {
+	// TelephonyManager phoneManager = (TelephonyManager)
+	// getApplicationContext()
+	// .getSystemService(Context.TELEPHONY_SERVICE);
+	// mSelfPhoneNumber = phoneManager.getLine1Number();
+	// Log.v("Waveform", "PhoneNumberGet = " + mSelfPhoneNumber);
+	// return mSelfPhoneNumber;
+	// }
+
+	public static String getSelfPhoneNumber() {
+		mContext = WaveformApplication.getInstance();
 		TelephonyManager phoneManager = (TelephonyManager) mContext
-				.getSystemService(Context.TELEPHONY_SERVICE);
+				.getApplicationContext().getSystemService(
+						Context.TELEPHONY_SERVICE);
 		mSelfPhoneNumber = phoneManager.getLine1Number();
 		Log.v("Waveform", "PhoneNumberGet = " + mSelfPhoneNumber);
 		return mSelfPhoneNumber;

@@ -54,7 +54,7 @@ public class GPSLocationService implements LocationListener {
 					|| status
 							.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
 
-				mLocationManager = status; //
+				mLocationManager = status; 
 
 				// Call locationServiceInitial() to update location when GPS or
 				// NETWORK provider is open .
@@ -74,17 +74,14 @@ public class GPSLocationService implements LocationListener {
 		mLocationData = LocationData.getInstance();
 		mLocationData.setHandler();
 		mLocationData.mLocationDataHandler.postDelayed(
-				mLocationData.mLocationDataRunnable, mLocationData.LOCATION_BUFFER_SAVE_PERIOD);
+				mLocationData.mLocationDataRunnable,
+				mLocationData.LOCATION_BUFFER_SAVE_PERIOD);
 		mLocationManager.requestLocationUpdates(bestProvider,
 				LOCATION_UPDATE_PERIOD, LOCATION_UPDATE_DISTANCE, this);
 
 		Criteria criteria = new Criteria(); // Information provider standard .
-		bestProvider = mLocationManager.getBestProvider(criteria, true); // Select
-																			// most
-																			// accurate
-																			// provider
-																			// .
-
+		// Select most accurate provider .
+		bestProvider = mLocationManager.getBestProvider(criteria, true);
 		// Use Network to get location .
 		Location location = mLocationManager
 				.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);

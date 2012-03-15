@@ -1,6 +1,7 @@
 package com.larc.waveform.service;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.larc.bluetoothconnect.BluetoothService;
 import com.larc.waveform.data.DataFileManager;
@@ -8,6 +9,8 @@ import com.larc.waveform.data.EcgData;
 
 public class HealthDeviceBluetoothService extends BluetoothService implements
 		EcgData.EcgListener {
+
+	private static final String TAG = "HealthDeviceBluetoothService";
 
 	public static final int CHANNEL_EEG = 0;
 	public static final int CHANNEL_DBS = 1;
@@ -31,12 +34,13 @@ public class HealthDeviceBluetoothService extends BluetoothService implements
 		mGPSLocation.mLocationServiceHandler
 				.post(mGPSLocation.mLocationServiceRunnable);
 
-		mEmergencyCallService = EmergencyCallService.getInstance();
-
 		mDataFileManager = DataFileManager.getInstance();
 		mDataFileManager.setId("");
 		mDataFileManager.setName("");
-		mDataFileManager.setPhoneNumber("");
+		mDataFileManager.setPhoneNumber(EmergencyCallService
+				.getSelfPhoneNumber());
+		Log.v("TAG",
+				"PhoneNumber = " + EmergencyCallService.getSelfPhoneNumber());
 	}
 
 	public static HealthDeviceBluetoothService getInstance(Context context) {

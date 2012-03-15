@@ -39,7 +39,7 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 
 	private Picture mGridPicture;
 
-	private volatile int mMode = MODE_STATIC;
+	private volatile int mMode = MODE_MOVING;
 
 	public static class WaveformAdapter {
 		public int[] getCurrentData(int set, int preferedSize) {
