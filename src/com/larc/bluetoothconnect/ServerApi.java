@@ -59,7 +59,6 @@ public class ServerApi {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 		return response;
 	}
 }

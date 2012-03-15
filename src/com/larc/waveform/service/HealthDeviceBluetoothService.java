@@ -1,7 +1,10 @@
 package com.larc.waveform.service;
 
+import java.util.UUID;
+
 import android.content.Context;
-import android.util.Log;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 
 import com.larc.bluetoothconnect.BluetoothService;
 import com.larc.waveform.data.DataFileManager;
@@ -10,7 +13,7 @@ import com.larc.waveform.data.EcgData;
 public class HealthDeviceBluetoothService extends BluetoothService implements
 		EcgData.EcgListener {
 
-	private static final String TAG = "HealthDeviceBluetoothService";
+	// private static final String TAG = "HealthDeviceBluetoothService";
 
 	public static final int CHANNEL_EEG = 0;
 	public static final int CHANNEL_DBS = 1;
@@ -22,6 +25,9 @@ public class HealthDeviceBluetoothService extends BluetoothService implements
 	private DataFileManager mDataFileManager;
 	private final GPSLocationService mGPSLocation;
 	private final EcgData mEcgData;
+
+	private static String uniqueID = null;
+	private static final String PREF_UNIQUE_ID = "PREF_UNIQUE_ID";
 
 	private HealthDeviceBluetoothService(Context context) {
 		super(context);
@@ -35,12 +41,10 @@ public class HealthDeviceBluetoothService extends BluetoothService implements
 				.post(mGPSLocation.mLocationServiceRunnable);
 
 		mDataFileManager = DataFileManager.getInstance();
+
 		mDataFileManager.setId("");
 		mDataFileManager.setName("");
-		mDataFileManager.setPhoneNumber(EmergencyCallService
-				.getSelfPhoneNumber());
-		Log.v("TAG",
-				"PhoneNumber = " + EmergencyCallService.getSelfPhoneNumber());
+		mDataFileManager.setPhoneNumber("");
 	}
 
 	public static HealthDeviceBluetoothService getInstance(Context context) {
@@ -48,6 +52,22 @@ public class HealthDeviceBluetoothService extends BluetoothService implements
 			mInstance = new HealthDeviceBluetoothService(context);
 		}
 		return mInstance;
+	}
+
+	// UniqueID of android device get() .
+	public synchronized static String id(Context context) {
+		if (uniqueID == null) {
+			SharedPreferences sp = context.getSharedPreferences(PREF_UNIQUE_ID,
+					Context.MODE_PRIVATE);
+			uniqueID = sp.getString(PREF_UNIQUE_ID, null);
+			if (uniqueID == null) {
+				uniqueID = UUID.randomUUID().toString();
+				Editor editor = sp.edit();
+				editor.putString(PREF_UNIQUE_ID, uniqueID);
+				editor.commit();
+			}
+		}
+		return uniqueID;
 	}
 
 	/**

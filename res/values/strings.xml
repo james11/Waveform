@@ -31,7 +31,7 @@
     <string name="filenotexsit">Uploading failed , no such value existed</string>
     <string name="sdcarderror">Uploading failed , no such value existed</string>
     <string name="success">Uploading success</string>
-    <string name="locationable">Enable Location</string>
+    <string name="locationable">Enable Location Antenna</string>
     <string name="mode_moving">Moving Mode</string>
     <string name="mode_stastic">Stastic Mode</string>
     <string name="pause">Pause</string>

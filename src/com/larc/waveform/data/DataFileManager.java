@@ -16,6 +16,7 @@ import android.util.Log;
 import com.larc.waveform.WaveformApplication;
 import com.larc.waveform.data.upload.UploadTask;
 import com.larc.waveform.data.upload.WaveformUploadService;
+import com.larc.waveform.service.HealthDeviceBluetoothService;
 
 public class DataFileManager {
 
@@ -23,6 +24,7 @@ public class DataFileManager {
 
 	private static final String OUTPUT_FILE_PATH = "/Larc/Waveform/";
 	private static DataFileManager sInstance;
+	private HealthDeviceBluetoothService mHealthDeviceBluetoothService;
 
 	public static class DataFileHeader {
 
@@ -201,7 +203,7 @@ public class DataFileManager {
 					mPhoneNumber));
 		}
 		mSavedFileList.clear();
-		Log.v(TAG, "Upload completed");
+		Log.v(TAG, "UploadTask listed");
 	}
 
 	/** format the input date into the form (yyyyMMddHHmmss) we want **/
@@ -210,8 +212,10 @@ public class DataFileManager {
 		return dateFormat.format(date);
 	}
 
+	@SuppressWarnings("static-access")
 	public void setId(String id) {
-		mId = id;
+		mId = mHealthDeviceBluetoothService.id(WaveformApplication
+				.getInstance());
 	}
 
 	public void setName(String name) {

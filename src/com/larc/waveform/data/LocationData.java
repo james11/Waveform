@@ -59,6 +59,7 @@ public class LocationData {
 		mLocationDataHandler = new Handler();
 	}
 
+	// Save location data by runnable
 	public Runnable mLocationDataRunnable = new Runnable() {
 		public void run() {
 
@@ -66,7 +67,7 @@ public class LocationData {
 					.saveDoubleData(mLocationDataBuffer, 1, BUFFER_SIZE);
 			mPointer = 0;
 			mCurrentPosition = 0;
-			Log.v(TAG, "save Location Data By Runnable");
+			Log.v(TAG, "Location Data Saved By Runnable");
 
 			mLocationDataHandler.postDelayed(this, LOCATION_BUFFER_SAVE_PERIOD);
 

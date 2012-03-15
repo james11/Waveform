@@ -28,15 +28,6 @@ public class EmergencyCallService {
 		return eInstance;
 	}
 
-	// private String getSelfPhoneNumber() {
-	// TelephonyManager phoneManager = (TelephonyManager)
-	// getApplicationContext()
-	// .getSystemService(Context.TELEPHONY_SERVICE);
-	// mSelfPhoneNumber = phoneManager.getLine1Number();
-	// Log.v("Waveform", "PhoneNumberGet = " + mSelfPhoneNumber);
-	// return mSelfPhoneNumber;
-	// }
-
 	public static String getSelfPhoneNumber() {
 		mContext = WaveformApplication.getInstance();
 		TelephonyManager phoneManager = (TelephonyManager) mContext

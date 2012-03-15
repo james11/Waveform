@@ -9,8 +9,6 @@ import android.graphics.Color;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -420,7 +418,7 @@ public class WaveformActivity extends Activity implements
 		LocationManager status = (LocationManager) (this
 				.getSystemService(Context.LOCATION_SERVICE));
 		if (status.isProviderEnabled(LocationManager.GPS_PROVIDER)
-				|| status.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+				) {
 		} else {
 			startActivity(new Intent(
 					android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
