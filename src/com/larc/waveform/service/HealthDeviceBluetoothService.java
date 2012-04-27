@@ -26,7 +26,7 @@ public class HealthDeviceBluetoothService extends BluetoothService implements
 	private final GPSLocationService mGPSLocation;
 	private final EcgData mEcgData;
 
-	private static String uniqueID = null;
+	public static String uniqueID = null;
 	private static final String PREF_UNIQUE_ID = "PREF_UNIQUE_ID";
 
 	private HealthDeviceBluetoothService(Context context) {
@@ -78,6 +78,10 @@ public class HealthDeviceBluetoothService extends BluetoothService implements
 	protected void onDataRead(int length, byte[] data) {
 		super.onDataRead(length, data);
 		mEcgData.write(length, data);
+	}
+
+	public String getID() {
+		return uniqueID;
 	}
 
 	public double getLongitude() {

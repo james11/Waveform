@@ -38,7 +38,7 @@ public final class R {
         public static final int in=0x7f07000e;
         public static final int insecure_connect_scan=0x7f070017;
         public static final int locationable=0x7f070019;
-        public static final int myTextView=0x7f07000b;
+        public static final int myidTextView=0x7f07000b;
         public static final int mylatitudeTextView=0x7f07000d;
         public static final int mylongitudeTextView=0x7f07000c;
         public static final int newDevices=0x7f070001;
@@ -69,7 +69,7 @@ public final class R {
         public static final int DBS=0x7f050003;
         public static final int DBS_channel=0x7f05001c;
         public static final int ECG_channel=0x7f05001d;
-        public static final int EEG=0x7f050002;
+        public static final int Uniqui_ID=0x7f050002;
         public static final int app_name=0x7f050001;
         public static final int bt_not_enabled_leaving=0x7f050010;
         public static final int button_scan=0x7f05000a;

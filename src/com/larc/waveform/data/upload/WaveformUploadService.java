@@ -5,10 +5,14 @@ import java.util.Vector;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
+import android.widget.Toast;
+
+import com.larc.waveform.WaveformApplication;
 
 public class WaveformUploadService extends IntentService {
 
 	private static final String TAG = "WaveformUploadService";
+	private Context mContext;
 
 	private static Vector<UploadTask> sUploadList = new Vector<UploadTask>();
 	private static Vector<UploadTask> sFailedList = new Vector<UploadTask>();
@@ -31,6 +35,9 @@ public class WaveformUploadService extends IntentService {
 				sFailedList.add(uploadTask);
 			}
 			sUploadList.remove(0);
+			mContext = WaveformApplication.getInstance();
+			Toast.makeText(mContext, "Upload Success", Toast.LENGTH_LONG)
+					.show();
 		}
 	}
 

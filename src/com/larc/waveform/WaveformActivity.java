@@ -67,7 +67,7 @@ public class WaveformActivity extends Activity implements
 	private Button mButtonPause;
 	private Button mButtonEEG;
 	private Button mButtonDBS;
-	private TextView mSignalTypeTextView;
+	private TextView mIDTextView;
 	private TextView mlongitudeTextView;
 	private TextView mlatitudeTextView;
 	private RadioGroup mRadioGroup;
@@ -97,7 +97,7 @@ public class WaveformActivity extends Activity implements
 		mButtonPause = (Button) findViewById(R.id.buttonPause);
 		mButtonEEG = (Button) findViewById(R.id.buttonEEG);
 		mButtonDBS = (Button) findViewById(R.id.buttonDBS);
-		mSignalTypeTextView = (TextView) findViewById(R.id.myTextView);
+		mIDTextView = (TextView) findViewById(R.id.myidTextView);
 		mlongitudeTextView = (TextView) findViewById(R.id.mylongitudeTextView);
 		mlatitudeTextView = (TextView) findViewById(R.id.mylatitudeTextView);
 		mWaveformContainer = (LinearLayout) findViewById(R.id.waveformContainer);
@@ -107,8 +107,8 @@ public class WaveformActivity extends Activity implements
 		// uploadbar = (ProgressBar) this.findViewById(R.id.uploadBar);
 		// resulView = (TextView) this.findViewById(R.id.result);
 
-		mSignalTypeTextView.setText(R.string.EEG);
-		mSignalTypeTextView.setTextColor(COLOR_TEXT_NORMAL);
+		mIDTextView.setText(R.string.Uniqui_ID);
+		mIDTextView.setTextColor(COLOR_TEXT_NORMAL);
 
 		mlongitudeTextView.setText(R.string.longitude);
 		mlongitudeTextView.setTextColor(COLOR_TEXT_NORMAL);
@@ -156,6 +156,7 @@ public class WaveformActivity extends Activity implements
 		public void run() {
 			int Rate = getHeartRate();
 			int deltaRate = getDeltaRate();
+			String ID = getID();
 			double longitude = getLongitude();
 			double latitude = getLatitude();
 
@@ -178,17 +179,27 @@ public class WaveformActivity extends Activity implements
 				mTextChannelNameArray[i].setText("ECG Channel"
 						+ "\nHeart Rate = " + Rate + " /min");
 
-				mlongitudeTextView.setText("longitude = " + longitude);
-				mlongitudeTextView.setTextColor(COLOR_TEXT_NORMAL);
+				mIDTextView.setText("ID : " + ID);
+				mIDTextView.setTextColor(COLOR_TEXT_NORMAL);
+				mIDTextView.setTextSize(20);
 
-				mlatitudeTextView.setText("latitude = " + latitude);
+				mlongitudeTextView.setText("longitude : " + longitude);
+				mlongitudeTextView.setTextColor(COLOR_TEXT_NORMAL);
+				mlongitudeTextView.setTextSize(20);
+
+				mlatitudeTextView.setText("latitude : " + latitude);
 				mlatitudeTextView.setTextColor(COLOR_TEXT_NORMAL);
+				mlatitudeTextView.setTextSize(20);
 
 			}
 			mRateRefreshHandler.postDelayed(this, HEART_RATE_UPDATE_PERIOD);
 		}
 
 	};
+
+	private String getID() {
+		return mHealthDeviceBluetoothService.getID();
+	}
 
 	private double getLongitude() {
 		return mHealthDeviceBluetoothService.getLongitude();
@@ -229,6 +240,7 @@ public class WaveformActivity extends Activity implements
 	/**
 	 * This function would be called before screen orientation
 	 */
+	// @SuppressWarnings("deprecation")
 	@Override
 	public Object onRetainNonConfigurationInstance() {
 		stopDrawing();
@@ -417,8 +429,7 @@ public class WaveformActivity extends Activity implements
 	private void ensureLocationable() {
 		LocationManager status = (LocationManager) (this
 				.getSystemService(Context.LOCATION_SERVICE));
-		if (status.isProviderEnabled(LocationManager.GPS_PROVIDER)
-				) {
+		if (status.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
 		} else {
 			startActivity(new Intent(
 					android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));

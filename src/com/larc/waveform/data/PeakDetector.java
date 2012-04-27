@@ -2,10 +2,12 @@ package com.larc.waveform.data;
 
 import java.util.ArrayList;
 
+import android.util.Log;
+
 import com.larc.waveform.service.EmergencyCallService;
 
 public class PeakDetector {
-	// private static final String TAG = "Heart";
+	private static final String TAG = "Heart";
 
 	/** Modify here between 115200 & 19200 boud rate **/
 	private static final int DETECTOR_SIZE = 6;
@@ -89,8 +91,8 @@ public class PeakDetector {
 		if (hasPeak && (max - mBase) > mAmplitudeRange * 0.7) {
 			mPeakTimeList.add(mTime[mIndex]);
 			updateRange(max - min);
-			// Log.v(TAG, "beat: amplitude=" + (max - mBase) + " base=" + mBase
-			// + " diff=" + (max - min));
+			Log.v(TAG, "beat: amplitude=" + (max - mBase) + " base=" + mBase
+					+ " diff=" + (max - min));
 			return true;
 		} else {
 			updateBase(min);

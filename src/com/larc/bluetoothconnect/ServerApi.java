@@ -18,7 +18,7 @@ public class ServerApi {
 
 	private static final String SERVER_CHARSET = "BIG5";
 
-	private static final String API_UPLOAD_URL = "http://140.114.14.54/phpBB3/ECGServer/PHPCode/upload_ok.php";
+	private static final String API_UPLOAD_URL = "http://140.114.14.54/phpBB3/ECGServer/PHPCode/Upload_process.php";
 	private static final String API_UPLOAD_FILE = "ufile";
 	private static final String API_UPLOAD_ID = "uid";
 	private static final String API_UPLOAD_NAME = "uname";

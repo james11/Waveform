@@ -3,7 +3,7 @@
 
     <string name="hello">Hello World, WaveformActivity!</string>
     <string name="app_name">Waveform</string>
-    <string name="EEG">1-Channel EEG signals</string>
+    <string name="Uniqui_ID">ID</string>
     <string name="DBS">1-Channel DBS signals</string>
 
     <!-- DeviceListActivity -->

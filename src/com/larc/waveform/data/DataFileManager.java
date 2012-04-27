@@ -208,7 +208,7 @@ public class DataFileManager {
 
 	/** format the input date into the form (yyyyMMddHHmmss) we want **/
 	private static String generateFileName(Date date) {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
 		return dateFormat.format(date);
 	}
 
