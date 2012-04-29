@@ -47,7 +47,7 @@ public class WaveformActivity extends Activity implements
 	// Codes for activity result
 	private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
 	private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
-	private static final int REQUEST_ENABLE_BT = 3;
+	private static final int SHOW_VERSION_INFORMATION = 3;
 
 	/*** These variable are for multiBio-channels ***/
 	// private static final String TITLE_EEG = "4-Channel EEG Signals";
@@ -382,6 +382,12 @@ public class WaveformActivity extends Activity implements
 		case R.id.locationable:
 			ensureLocationable();
 			return true;
+		case R.id.versionInfo:
+			// serverIntent = new Intent(this, AppVersionInfoActivity.class);
+			Intent intent = new Intent();
+			intent.setClass(this, AppVersionInfoActivity.class);
+			startActivity(intent);
+			return true;
 		case R.id.quitAPP:
 			finish();
 			return true;
@@ -461,18 +467,18 @@ public class WaveformActivity extends Activity implements
 
 			}
 			break;
-		case REQUEST_ENABLE_BT:
-			/** Not declare here **/
-			// When we request to enable Bluetooth returns
-			if (resultCode == Activity.RESULT_OK) {
-				// Bluetooth is now enabled, so set up a chat session
-				setupConnect();
-			} else {
-				// User did not enable Bluetooth or an error occurred
-				Toast.makeText(this, R.string.bt_not_enabled_leaving,
-						Toast.LENGTH_SHORT).show();
-				finish();
-			}
+		// case SHOW_VERSION_INFORMATION:
+		// /** Not declare here **/
+		// // When we request to enable Bluetooth returns
+		// if (resultCode == Activity.RESULT_OK) {
+		// // Bluetooth is now enabled, so set up a chat session
+		// setupConnect();
+		// } else {
+		// // User did not enable Bluetooth or an error occurred
+		// Toast.makeText(this, R.string.bt_not_enabled_leaving,
+		// Toast.LENGTH_SHORT).show();
+		// finish();
+		// }
 		}
 	}
 
