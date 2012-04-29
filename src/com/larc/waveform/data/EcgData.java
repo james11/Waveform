@@ -11,8 +11,9 @@ public class EcgData extends BufferedByteData {
 
 	private static final String TAG = "EcgData";
 
+	/********** Modify data file size here ************/
 	private static final int ECG_BUFFER_SIZE = 1024 * 200; // about 2 min
-	
+	/**************************************************/
 	// private static final int SATURATION_REGION = 20;
 	// private static final int BASE = 128;
 	// private long mLastPeakTime = 0;

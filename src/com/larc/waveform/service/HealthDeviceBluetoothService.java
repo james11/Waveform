@@ -17,7 +17,10 @@ public class HealthDeviceBluetoothService extends BluetoothService implements
 
 	public static final int CHANNEL_EEG = 0;
 	public static final int CHANNEL_DBS = 1;
+	
+	/** Modify here between 115200 & 19200 boud rate **/
 	private static final int ECG_SAMPLE_SIZE = 3;
+	/**************************************************/
 
 	private static HealthDeviceBluetoothService mInstance;
 

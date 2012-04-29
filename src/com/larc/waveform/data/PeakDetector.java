@@ -12,7 +12,8 @@ public class PeakDetector {
 	/** Modify here between 115200 & 19200 boud rate **/
 	private static final int DETECTOR_SIZE = 6;
 	private static final int PEAK_POS = DETECTOR_SIZE / 2;
-
+	/**************************************************/
+	
 	public static final float BASE_UPDATE_FACTOR = 0.03f;
 	public static final float AMP_UPDATE_FACTOR = 0.2f;
 	private static final int MIN_DISTANCE = 3;
