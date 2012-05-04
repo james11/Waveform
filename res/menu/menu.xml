@@ -29,12 +29,7 @@
         android:id="@+id/locationable"
         android:icon="@android:drawable/ic_menu_mylocation"
         android:showAsAction="ifRoom|withText"
-        android:title="@string/locationable"/>
-    <item
-        android:id="@+id/versionInfo"
-        android:icon="@android:drawable/ic_menu_mylocation"
-        android:showAsAction="ifRoom|withText"
-        android:title="@string/versionInfo"/>
+        android:title="@+id/locationable"/>
     <item
         android:id="@+id/quitAPP"
         android:icon="@android:drawable/ic_menu_mylocation"

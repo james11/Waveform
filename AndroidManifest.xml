@@ -37,8 +37,6 @@
         </activity>
         <activity android:name="com.larc.bluetoothconnect.DeviceListActivity" >
         </activity>
-        <activity android:name="com.larc.waveform.AppVersionInfoActivity" >
-        </activity>
 
         <service android:name="com.larc.waveform.data.upload.WaveformUploadService" >
         </service>
