@@ -35,8 +35,8 @@
     <string name="mode_moving">Moving Mode</string>
     <string name="mode_stastic">Stastic Mode</string>
     <string name="pause">Pause</string>
-    <string name="DBS_channel">DBS signals</string>
-    <string name="ECG_channel">ECG Signals</string>
+    <string name="DBS_channel">DBS</string>
+    <string name="ECG_channel">ECG</string>
     <string name="longitude">Longitude = </string>
     <string name="latitude">Latitude = </string>
 

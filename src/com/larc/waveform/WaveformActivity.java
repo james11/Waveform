@@ -33,6 +33,7 @@ public class WaveformActivity extends Activity implements
 	private static final int PLOTTING_OFFSET = 200; // Offset plotting line .
 	private static final int WAVEFORM_COUNT = 1;
 	private static final int HEART_RATE_UPDATE_PERIOD = 1000 * 10;
+	private static final int TEXT_SIZE = 10;
 
 	private static final int COLOR_TEXT_NORMAL = Color.GRAY;
 	private static final int COLOR_TEXT_SELECTED = 0xFFFF9900;
@@ -120,6 +121,10 @@ public class WaveformActivity extends Activity implements
 		mButtonEEG.setTextColor(COLOR_TEXT_NORMAL);
 		mButtonPause.setTextColor(COLOR_TEXT_NORMAL);
 
+		mButtonDBS.setTextSize(TEXT_SIZE);
+		mButtonEEG.setTextSize(TEXT_SIZE);
+		mButtonPause.setTextSize(TEXT_SIZE);
+
 		// one button listener used by two buttons
 		mButtonEEG.setOnClickListener(this);
 		mButtonDBS.setOnClickListener(this);
@@ -139,7 +144,7 @@ public class WaveformActivity extends Activity implements
 		for (int i = 0; i < WAVEFORM_COUNT; i++) {
 			mTextChannelNameArray[i] = new TextView(this);
 			mTextChannelNameArray[i].setText("ECG Channel");// + (i + 1));
-			mTextChannelNameArray[i].setTextSize(20);
+			mTextChannelNameArray[i].setTextSize(TEXT_SIZE);
 			mTextChannelNameArray[i].setTextColor(0xFF00CC00);
 			mTextChannelNameArray[i].setGravity(android.view.Gravity.CENTER);
 
@@ -181,15 +186,15 @@ public class WaveformActivity extends Activity implements
 
 				mIDTextView.setText("ID : " + ID);
 				mIDTextView.setTextColor(COLOR_TEXT_NORMAL);
-				mIDTextView.setTextSize(20);
+				mIDTextView.setTextSize(TEXT_SIZE);
 
 				mlongitudeTextView.setText("longitude : " + longitude);
 				mlongitudeTextView.setTextColor(COLOR_TEXT_NORMAL);
-				mlongitudeTextView.setTextSize(20);
+				mlongitudeTextView.setTextSize(TEXT_SIZE);
 
 				mlatitudeTextView.setText("latitude : " + latitude);
 				mlatitudeTextView.setTextColor(COLOR_TEXT_NORMAL);
-				mlatitudeTextView.setTextSize(20);
+				mlatitudeTextView.setTextSize(TEXT_SIZE);
 
 			}
 			mRateRefreshHandler.postDelayed(this, HEART_RATE_UPDATE_PERIOD);

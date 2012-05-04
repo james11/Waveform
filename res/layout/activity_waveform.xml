@@ -79,14 +79,16 @@
                 android:layout_height="wrap_content"
                 android:checked="true"
                 android:text="@string/mode_moving"
-                android:textColor="#FFF" />
+                android:textColor="#FFF"
+                android:textSize="10sp" />
 
             <RadioButton
                 android:id="@+id/radio1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/mode_stastic"
-                android:textColor="#FFF" />
+                android:textColor="#FFF"
+                android:textSize="10sp" />
         </RadioGroup>
 
         <LinearLayout
