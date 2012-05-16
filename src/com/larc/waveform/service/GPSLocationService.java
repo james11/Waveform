@@ -19,7 +19,7 @@ public class GPSLocationService implements LocationListener {
 
 	private int LOCATION_SERVICE_CHECK_PERIOD = 1000 * 10;
 
-	/** Capture Location information every 10 minutes or 30 meters **/
+	/** Capture Location information every 20 seconds **/
 	private int LOCATION_UPDATE_PERIOD = 1000 * 20;
 	private int LOCATION_UPDATE_DISTANCE = 0;
 
@@ -86,11 +86,18 @@ public class GPSLocationService implements LocationListener {
 				LOCATION_UPDATE_PERIOD, LOCATION_UPDATE_DISTANCE, this);
 
 		Criteria criteria = new Criteria(); // Information provider standard .
+
+		criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+		criteria.setPowerRequirement(Criteria.POWER_LOW);
+		criteria.setAltitudeRequired(false);
+		criteria.setBearingRequired(false);
+		criteria.setSpeedRequired(false);
+		criteria.setCostAllowed(true);
+
 		// Select most accurate provider .
 		bestProvider = mLocationManager.getBestProvider(criteria, true);
 		// Use Network to get location .
-		Location location = mLocationManager
-				.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+		Location location = mLocationManager.getLastKnownLocation(bestProvider);
 		getLocation(location);
 	}
 

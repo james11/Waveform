@@ -68,7 +68,7 @@ public class AppVersionInfoActivity extends Activity {
 		mAppInfoTextview.setTextSize(INFO_TEXT_SIZE);
 
 		mVersionTextview = (TextView) findViewById(R.id.myVersionTextView);
-		mVersionTextview.setText("Version : 1.2");
+		mVersionTextview.setText("Version : 1.3");
 		mVersionTextview.setTextColor(COLOR_TEXT_HIGHLIGHT);
 		mVersionTextview.setTextSize(VERSION_TEXT_SIZE);
 
