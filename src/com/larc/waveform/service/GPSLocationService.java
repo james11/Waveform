@@ -18,8 +18,10 @@ public class GPSLocationService implements LocationListener {
 	private static final String TAG = "GPS";
 
 	private int LOCATION_SERVICE_CHECK_PERIOD = 1000 * 10;
-	private int LOCATION_UPDATE_PERIOD = 1000 * 60 * 10;
-	private int LOCATION_UPDATE_DISTANCE = 10;
+
+	/** Capture Location information every 10 minutes or 30 meters **/
+	private int LOCATION_UPDATE_PERIOD = 1000 * 20;
+	private int LOCATION_UPDATE_DISTANCE = 0;
 
 	private Context mContext;
 	private LocationManager mLocationManager;
@@ -78,8 +80,10 @@ public class GPSLocationService implements LocationListener {
 				mLocationData.LOCATION_BUFFER_SAVE_PERIOD);
 
 		mLocationManager.requestLocationUpdates(
-				LocationManager.GPS_PROVIDER, LOCATION_UPDATE_PERIOD,
+				LocationManager.NETWORK_PROVIDER, LOCATION_UPDATE_PERIOD,
 				LOCATION_UPDATE_DISTANCE, this);
+		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+				LOCATION_UPDATE_PERIOD, LOCATION_UPDATE_DISTANCE, this);
 
 		Criteria criteria = new Criteria(); // Information provider standard .
 		// Select most accurate provider .

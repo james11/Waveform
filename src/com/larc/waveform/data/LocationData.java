@@ -8,8 +8,12 @@ public class LocationData {
 	private static final String TAG = "LocationData";
 
 	// Adjust variable .
-	protected static int BUFFER_SIZE = 50;
-	public int LOCATION_BUFFER_SAVE_PERIOD = 1000 * 60;
+	/**
+	 * Saved location information into Location.txt every 10 minutes or while
+	 * location_Buffer full(30 pairs of location information.)
+	 **/
+	protected static int BUFFER_SIZE = 60;
+	public int LOCATION_BUFFER_SAVE_PERIOD = 1000 * 60 * 10;
 
 	private final double[] mLocationDataBuffer = new double[BUFFER_SIZE + 1];
 	private int mPointer = 0;

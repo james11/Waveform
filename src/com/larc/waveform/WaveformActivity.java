@@ -30,10 +30,17 @@ import com.larc.waveform.ui.widget.WaveformView.WaveformAdapter;
 public class WaveformActivity extends Activity implements
 		Button.OnClickListener, OnCheckedChangeListener {
 	private static final int DEFAULT_SIZE = 1300; // Screen pixels number
-	private static final int PLOTTING_OFFSET = 200; // Offset plotting line .
 	private static final int WAVEFORM_COUNT = 1;
 	private static final int HEART_RATE_UPDATE_PERIOD = 1000 * 10;
-	private static final int TEXT_SIZE = 10;
+
+	/******* Modify here between Tablet & SmartPhone *******/
+	// Tablet 200, SmartPhone 150
+	 private static final int PLOTTING_OFFSET = 200;
+//	private static final int PLOTTING_OFFSET = 150;
+	// Tablet 20, SmartPhone 10
+	 private static final int TEXT_SIZE = 20;
+//	private static final int TEXT_SIZE = 10;
+	/*************************************************************/
 
 	private static final int COLOR_TEXT_NORMAL = Color.GRAY;
 	private static final int COLOR_TEXT_SELECTED = 0xFFFF9900;

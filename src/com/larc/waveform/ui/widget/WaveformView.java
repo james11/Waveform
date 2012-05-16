@@ -24,11 +24,12 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 	private static final int DEFAULT_X_SIZE = 1400;
 	private static final int DEFAULT_PAINT_COLOR = 0xFFFF0000;
 	private static final int DEFAULT_LINE_WIDTH = 3;
-	
-	/** Modify here between Tablet 21 & SmartPhone 13 **/
-	private static final int GRID_SIZE = 13;
-	/**************************************************/
-	
+
+	/******* Modify here between Tablet 21 & SmartPhone 13 *******/
+	private static final int GRID_SIZE = 21;
+	// private static final int GRID_SIZE = 13;
+	/*************************************************************/
+
 	private static final int GRID_COLOR = 0xFFCCCCCC;
 
 	public static final int MODE_MOVING = 0;
