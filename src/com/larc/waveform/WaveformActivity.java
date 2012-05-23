@@ -35,11 +35,11 @@ public class WaveformActivity extends Activity implements
 
 	/******* Modify here between Tablet & SmartPhone *******/
 	// Tablet 200, SmartPhone 150
-	private static final int PLOTTING_OFFSET = 200;
-	// private static final int PLOTTING_OFFSET = 150;
+	 private static final int PLOTTING_OFFSET = 200;
+//	private static final int PLOTTING_OFFSET = 150;
 	// Tablet 20, SmartPhone 10
-	private static final int TEXT_SIZE = 20;
-	// private static final int TEXT_SIZE = 10;
+	 private static final int TEXT_SIZE = 20;
+//	private static final int TEXT_SIZE = 10;
 	/*************************************************************/
 
 	private static final int COLOR_TEXT_NORMAL = Color.GRAY;

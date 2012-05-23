@@ -20,7 +20,7 @@ public class GPSLocationService implements LocationListener {
 	private int LOCATION_SERVICE_CHECK_PERIOD = 1000 * 10;
 
 	/** Capture Location information every 20 seconds **/
-	private int LOCATION_UPDATE_PERIOD = 1000 * 20;
+	private int LOCATION_UPDATE_PERIOD = 1000 * 3;
 	private int LOCATION_UPDATE_DISTANCE = 0;
 
 	private Context mContext;

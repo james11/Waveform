@@ -26,8 +26,8 @@ public class WaveformView extends SurfaceView implements SurfaceHolder.Callback 
 	private static final int DEFAULT_LINE_WIDTH = 3;
 
 	/******* Modify here between Tablet 21 & SmartPhone 13 *******/
-//	private static final int GRID_SIZE = 21;
-	 private static final int GRID_SIZE = 13;
+	private static final int GRID_SIZE = 21;
+//	 private static final int GRID_SIZE = 13;
 	/*************************************************************/
 
 	private static final int GRID_COLOR = 0xFFCCCCCC;

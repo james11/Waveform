@@ -39,16 +39,16 @@ public class AppVersionInfoActivity extends Activity {
 	private static final int DEPARTMENT_TEXT_SIZE = 30;
 
 	/********** SmartPhone **********/
-	// // Tablet:35, SmartPhone: 20
-	// private static final int INFO_TEXT_SIZE = 20;
-	// private static final int VERSION_TEXT_SIZE = 20;
-	// // Tablet:20, SmartPhone: 15
-	// private static final int DATE_TEXT_SIZE = 15;
-	// // Tablet:25, SmartPhone: 15
-	// private static final int INTRODUCTION_TEXT_SIZE = 15;
-	// // Tablet:30, SmartPhone: 20
-	// private static final int EDITOR_TEXT_SIZE = 20;
-	// private static final int DEPARTMENT_TEXT_SIZE = 20;
+//	// Tablet:35, SmartPhone: 20
+//	private static final int INFO_TEXT_SIZE = 20;
+//	private static final int VERSION_TEXT_SIZE = 20;
+//	// Tablet:20, SmartPhone: 15
+//	private static final int DATE_TEXT_SIZE = 15;
+//	// Tablet:25, SmartPhone: 15
+//	private static final int INTRODUCTION_TEXT_SIZE = 15;
+//	// Tablet:30, SmartPhone: 20
+//	private static final int EDITOR_TEXT_SIZE = 20;
+//	private static final int DEPARTMENT_TEXT_SIZE = 20;
 
 	/*************************************************************/
 
@@ -83,10 +83,10 @@ public class AppVersionInfoActivity extends Activity {
 		mIntroductionTextview = (TextView) findViewById(R.id.myIntroductionTextView);
 		mIntroductionTextview.setText("Introduction:\n"
 				+ "\t1. For 19200 boud rate 'Tablet'\n"
-				// + "\t1. For 19200 boud rate 'Smart Phone'\n"
-				+ "\t2. Location data uploading fixed\n"
+//				 + "\t1. For 19200 boud rate 'Smart Phone'\n"
+				+ "\t2. Location data uploading fixed\n" + "\t3. GPS fixed\n"
 		/**
-		 * + "\t3. \n" + "\t4. \n" + "\t5. \n"
+		 * + "\t4. \n" + "\t5. \n"
 		 **/
 		);
 		mIntroductionTextview.setTextColor(COLOR_TEXT_NORMAL);

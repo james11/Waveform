@@ -12,7 +12,7 @@ public class LocationData {
 	 * Saved location information into Location.txt every 10 minutes or while
 	 * location_Buffer full(30 pairs of location information.)
 	 **/
-	protected static int BUFFER_SIZE = 60;
+	protected static int BUFFER_SIZE = 200;
 	public int LOCATION_BUFFER_SAVE_PERIOD = 1000 * 60 * 10;
 
 	private final double[] mLocationDataBuffer = new double[BUFFER_SIZE + 1];
